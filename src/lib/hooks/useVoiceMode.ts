@@ -1,0 +1,152 @@
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
+
+interface VoiceState {
+  isListening: boolean;
+  isSupported: boolean;
+  transcript: string;
+  error: string | null;
+}
+
+export function useVoiceMode() {
+  const [voiceState, setVoiceState] = useState<VoiceState>({
+    isListening: false,
+    isSupported: false,
+    transcript: '',
+    error: null,
+  });
+  
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const recognitionRef = useRef<any>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    // Check if speech recognition is supported
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+
+        recognition.onresult = (event: any) => {
+          const transcript = Array.from(event.results)
+            .map((result: any) => result[0])
+            .map((result: any) => result.transcript)
+            .join('');
+          
+          setVoiceState(prev => ({ ...prev, transcript }));
+        };
+
+        recognition.onerror = (event: any) => {
+          setVoiceState(prev => ({
+            ...prev,
+            isListening: false,
+            error: event.error,
+          }));
+        };
+
+        recognition.onend = () => {
+          setVoiceState(prev => ({ ...prev, isListening: false }));
+        };
+
+        recognitionRef.current = recognition;
+        setVoiceState(prev => ({ ...prev, isSupported: true }));
+      }
+    }
+  }, []);
+
+  const startListening = () => {
+    if (recognitionRef.current && !voiceState.isListening) {
+      setVoiceState(prev => ({ ...prev, transcript: '', error: null }));
+      recognitionRef.current.start();
+      setVoiceState(prev => ({ ...prev, isListening: true }));
+    }
+  };
+
+  const stopListening = () => {
+    if (recognitionRef.current && voiceState.isListening) {
+      recognitionRef.current.stop();
+    }
+  };
+
+  const speak = async (text: string) => {
+    try {
+      setIsSpeaking(true);
+      
+      // Call OpenAI TTS API
+      const response = await fetch('/api/tts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text }),
+      });
+
+      if (!response.ok) {
+        throw new Error('TTS request failed');
+      }
+
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      
+      // Play the audio
+      const audio = new Audio(audioUrl);
+      audioRef.current = audio;
+      
+      audio.onended = () => {
+        setIsSpeaking(false);
+        URL.revokeObjectURL(audioUrl);
+      };
+      
+      audio.onerror = () => {
+        setIsSpeaking(false);
+        URL.revokeObjectURL(audioUrl);
+      };
+      
+      await audio.play();
+    } catch (error) {
+      console.error('TTS error:', error);
+      setIsSpeaking(false);
+      // Fallback to browser TTS
+      speakWithBrowserTTS(text);
+    }
+  };
+
+  const speakWithBrowserTTS = (text: string) => {
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.9;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+      
+      utterance.onend = () => setIsSpeaking(false);
+      utterance.onerror = () => setIsSpeaking(false);
+      
+      window.speechSynthesis.speak(utterance);
+    }
+  };
+
+  const stopSpeaking = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    setIsSpeaking(false);
+  };
+
+  return {
+    ...voiceState,
+    isSpeaking,
+    startListening,
+    stopListening,
+    speak,
+    stopSpeaking,
+  };
+}
