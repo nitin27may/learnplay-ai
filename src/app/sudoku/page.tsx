@@ -9,7 +9,6 @@ import { GameMode } from '@/lib/sudoku/types';
 import { useVoiceMode } from '@/lib/hooks/useVoiceMode';
 import { VoiceControls } from '@/components/VoiceControls';
 import { CellAnnotation } from '@/lib/sudoku/annotations';
-import { TeachingControls } from '@/components/TeachingControls';
 
 export default function SudokuPage() {
   const [gameMode, setGameMode] = useState<GameMode>('play');
@@ -18,7 +17,6 @@ export default function SudokuPage() {
   const [annotations, setAnnotations] = useState<CellAnnotation[]>([]);
   const [annotationMessage, setAnnotationMessage] = useState<string>('');
   const [currentGrid, setCurrentGrid] = useState<(number | null)[][]>([]);
-  const [teachingStep, setTeachingStep] = useState(0);
 
   // Connect to the Sudoku teaching agent
   const { state, setState } = useCoAgent({
@@ -33,6 +31,13 @@ export default function SudokuPage() {
         ...state,
         sudoku_grid: currentGrid,
       });
+      
+      // Clear highlights when user makes a move
+      if (annotations.length > 0) {
+        console.log('✅ User made a move, clearing highlights');
+        setAnnotations([]);
+        setAnnotationMessage('');
+      }
     }
   }, [currentGrid]);
 
@@ -86,6 +91,7 @@ export default function SudokuPage() {
         ...state,
         last_move: { row, col, value, timestamp: Date.now() },
       });
+      return `Move recorded: placed ${value} at row ${row}, col ${col}`;
     },
   });
 
@@ -104,76 +110,11 @@ export default function SudokuPage() {
     },
   });
 
-  // Frontend tool for AI to show interactive follow-up actions
-  useFrontendTool({
-    name: 'showNextStepButtons',
-    description: 'Show interactive buttons for the user to continue learning without typing',
-    parameters: [
-      {
-        name: 'buttons',
-        description: 'Array of button objects with label and action',
-        type: 'object',
-        required: true,
-      },
-    ],
-    handler({ buttons }) {
-      console.log('🔘 Showing next step buttons:', buttons);
-      // These will appear as suggestions in CopilotKit
-      return { success: true, buttons };
-    },
-  });
-
-  // Frontend tool for progressive highlighting
-  useFrontendTool({
-    name: 'highlightProgressive',
-    description: 'Highlight cells progressively - first target cell, then related cells step by step',
-    parameters: [
-      {
-        name: 'step',
-        description: 'Current teaching step number',
-        type: 'number',
-        required: true,
-      },
-      {
-        name: 'cells',
-        description: 'Cells to highlight in this step',
-        type: 'object',
-        required: true,
-      },
-      {
-        name: 'message',
-        description: 'What to explain in this step',
-        type: 'string',
-        required: true,
-      },
-      {
-        name: 'duration',
-        description: 'How long to show (default 15000ms)',
-        type: 'number',
-        required: false,
-      },
-    ],
-    handler({ step, cells, message, duration = 15000 }) {
-      console.log(`📚 Teaching Step ${step}:`, message);
-      setTeachingStep(step);
-      setAnnotations(cells);
-      setAnnotationMessage(`Step ${step}: ${message}`);
-      
-      if (message) {
-        voice.speak(message);
-      }
-      
-      setTimeout(() => {
-        setAnnotations([]);
-        setAnnotationMessage('');
-      }, duration);
-    },
-  });
-
   // Frontend tool for AI to highlight cells
   useFrontendTool({
     name: 'highlightCells',
-    description: 'Highlight specific cells on the Sudoku board to visually explain a concept. ALWAYS call this when explaining strategies or showing examples.',
+    description: 'Highlight cells on the board with persistent highlighting. Highlights remain visible until user places a number or clears them. Use for teaching suggestions.',
+
     parameters: [
       {
         name: 'cells',
@@ -194,25 +135,41 @@ export default function SudokuPage() {
         required: false,
       },
     ],
-    handler({ cells, message, duration = 15000 }) {
+    handler({ cells, message, duration }) {
       console.log('🎨 Highlighting cells:', cells, 'Message:', message);
       
+      // Validate and handle cells parameter
+      if (!cells) {
+        console.error('❌ No cells provided to highlightCells');
+        return 'Error: No cells provided';
+      }
+      
+      // Handle both array and object format for cells
+      let cellsArray;
+      try {
+        cellsArray = Array.isArray(cells) ? cells : [cells];
+        console.log('✅ Processed cells array:', cellsArray);
+      } catch (err) {
+        console.error('❌ Error processing cells:', err);
+        return 'Error: Invalid cells format';
+      }
+      
       // Show visual highlights
-      setAnnotations(cells);
-      setAnnotationMessage(message);
+      setAnnotations(cellsArray);
+      setAnnotationMessage(message || '');
       
       // Speak the explanation simultaneously
       if (message) {
         console.log('🔊 Speaking explanation:', message);
-        voice.speak(message);
+        voice.speak(message).catch((err) => {
+          console.warn('⚠️ TTS failed, continuing without voice:', err);
+        });
       }
       
-      // Auto-clear after duration
-      setTimeout(() => {
-        console.log('🧹 Clearing highlights');
-        setAnnotations([]);
-        setAnnotationMessage('');
-      }, duration);
+      // Keep highlights persistent - only clear when user makes a move or explicitly clears
+      // No auto-clear timeout
+      
+      return `Highlighted ${cellsArray.length} cells: ${message}`;
     },
   });
 
@@ -225,6 +182,7 @@ export default function SudokuPage() {
       console.log('🧹 Manually clearing highlights');
       setAnnotations([]);
       setAnnotationMessage('');
+      return 'Highlights cleared';
     },
   });
 
@@ -243,19 +201,22 @@ export default function SudokuPage() {
         }}
         suggestions={[
           {
+            title: 'Explain Basics',
+            message: 'Explain the basic rules of Sudoku by highlighting the grid, rows, and columns',
+          },
+          {
             title: 'Teach Me Step-by-Step',
             message: 'Find an empty cell and teach me step by step what number goes there',
           },
           {
-            title: 'Show Next Move',
-            message: 'Show me the next move I should make with progressive highlighting',
+            title: 'Continue to Next Step',
+            message: 'Show me the next step or another cell I should fill',
           },
           {
-            title: 'Explain Strategy',
-            message: 'Teach me a Sudoku strategy using step-by-step visual examples',
+            title: 'Explain Why',
+            message: 'Explain the reasoning behind this suggestion in more detail',
           },
         ]}
-        defaultOpen={false}
       >
         <div className="p-8">
           {/* Mode Selector */}
@@ -329,15 +290,6 @@ export default function SudokuPage() {
             }}
           />
         </div>
-
-        <TeachingControls 
-          step={teachingStep}
-          onAction={(action) => {
-            console.log('🎮 User clicked:', action);
-            // This will trigger the agent to respond to the action
-            setState({ ...state, last_action: action });
-          }}
-        />
       </CopilotSidebar>
     </main>
   );

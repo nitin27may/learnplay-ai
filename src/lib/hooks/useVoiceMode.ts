@@ -87,7 +87,9 @@ export function useVoiceMode() {
       });
 
       if (!response.ok) {
-        throw new Error('TTS request failed');
+        console.warn('OpenAI TTS failed, using browser fallback');
+        speakWithBrowserTTS(text);
+        return;
       }
 
       const audioBlob = await response.blob();

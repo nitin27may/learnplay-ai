@@ -153,6 +153,101 @@ def suggest_next_move(grid: List[List[Optional[int]]]) -> Dict[str, Any]:
     }
 
 @tool
+def explain_sudoku_basics(step: str = "all") -> Dict[str, Any]:
+    """
+    Explain the basic rules of Sudoku with visual highlighting guides.
+    This tool provides step-by-step explanations with highlighting for:
+    - 3x3 boxes (each must have 1-9 with no repeats)
+    - Rows (each must have 1-9 with no repeats)
+    - Columns (each must have 1-9 with no repeats)
+    
+    Args:
+        step: Which rule to explain ("box", "row", "column", or "all" for overview)
+        
+    Returns:
+        Dictionary with explanation and cells to highlight
+    """
+    
+    if step == "box":
+        # Highlight the top-left 3x3 box as an example
+        cells_to_highlight = []
+        for row in range(3):
+            for col in range(3):
+                cells_to_highlight.append({
+                    "row": row,
+                    "col": col,
+                    "type": "highlight",
+                    "color": "blue"
+                })
+        
+        return {
+            "step": "box",
+            "cells": cells_to_highlight,
+            "message": "Each 3×3 box must contain numbers 1-9 with no repeats. I'm highlighting one box.",
+            "explanation": (
+                "**3×3 Box Rule**: The Sudoku grid is divided into nine 3×3 boxes. "
+                "Each box must contain all numbers from 1 to 9 exactly once. "
+                "No number can repeat within the same box."
+            )
+        }
+    
+    elif step == "row":
+        # Highlight the first row as an example
+        cells_to_highlight = []
+        for col in range(9):
+            cells_to_highlight.append({
+                "row": 0,
+                "col": col,
+                "type": "highlight",
+                "color": "green"
+            })
+        
+        return {
+            "step": "row",
+            "cells": cells_to_highlight,
+            "message": "Each row must contain numbers 1-9 with no repeats. I'm highlighting one row.",
+            "explanation": (
+                "**Row Rule**: Each horizontal row across the entire grid must contain "
+                "all numbers from 1 to 9 exactly once. No number can repeat within the same row."
+            )
+        }
+    
+    elif step == "column":
+        # Highlight the first column as an example
+        cells_to_highlight = []
+        for row in range(9):
+            cells_to_highlight.append({
+                "row": row,
+                "col": 0,
+                "type": "highlight",
+                "color": "yellow"
+            })
+        
+        return {
+            "step": "column",
+            "cells": cells_to_highlight,
+            "message": "Each column must contain numbers 1-9 with no repeats. I'm highlighting one column.",
+            "explanation": (
+                "**Column Rule**: Each vertical column down the entire grid must contain "
+                "all numbers from 1 to 9 exactly once. No number can repeat within the same column."
+            )
+        }
+    
+    else:  # "all" or overview
+        return {
+            "step": "overview",
+            "cells": [],
+            "message": "Sudoku has three main rules: boxes, rows, and columns must each have 1-9 with no repeats.",
+            "explanation": (
+                "**Sudoku Basic Rules**:\n\n"
+                "1. **3×3 Boxes**: Each of the nine 3×3 boxes must contain numbers 1-9 (no repeats)\n"
+                "2. **Rows**: Each of the nine horizontal rows must contain numbers 1-9 (no repeats)\n"
+                "3. **Columns**: Each of the nine vertical columns must contain numbers 1-9 (no repeats)\n\n"
+                "When you place a number, it must satisfy ALL THREE rules at once!"
+            )
+        }
+
+@tool
 def explain_strategy(strategy_name: str) -> str:
     """
     Explain a Sudoku solving strategy in detail.
