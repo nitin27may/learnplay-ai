@@ -6,177 +6,6 @@ LearnPlay.ai combines the timeless appeal of strategy games (Sudoku and Chess) w
 
 ![Next.js](https://img.shields.io/badge/Next.js-16.1-black) ![CopilotKit](https://img.shields.io/badge/CopilotKit-1.51-blue) ![LangGraph](https://img.shields.io/badge/LangGraph-1.0-green) ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
 
-## Project Vision
-
-Transform how people learn strategic thinking through games by providing:
-- **Interactive AI Tutors**: Not just hints, but comprehensive teaching with explanations
-- **Visual Learning**: Cell highlighting, annotations, and real-time visual feedback
-- **Voice-Enabled Teaching**: Eleven Labs TTS for natural voice explanations
-- **Adaptive Difficulty**: AI adjusts teaching based on player progress
-- **Step-by-Step Guidance**: Break down complex strategies into digestible steps
-
-## Documentation
-
-- [Project Overview](docs/PROJECT_OVERVIEW.md) - Vision, goals, and technical approach
-- [Sudoku Game Guide](docs/SUDOKU_GUIDE.md) - Complete Sudoku implementation details
-- [Chess Game Guide](docs/CHESS_GUIDE.md) - Chess game architecture (coming soon)
-- [AI Teaching System](docs/AI_TEACHING.md) - How the AI tutor works
-- [Architecture](docs/ARCHITECTURE.md) - Technical architecture and design decisions
-- [Development Guide](docs/DEVELOPMENT.md) - Setup, development, and deployment
-
-## Current Features
-
-### Sudoku Game (Fully Implemented)
-- **Complete Game Mechanics**
-  - Puzzle generation with 4 difficulty levels (Easy, Medium, Hard, Expert)
-  - Interactive board with cell selection and number placement
-  - Keyboard shortcuts and number pad input
-  - Undo/Redo functionality with move history
-  - Smart hint system with strategy-based suggestions
-  - Real-time validation and error detection
-  - Timer and mistake tracking
-
-- **AI Teaching Features**
-  - Interactive AI tutor with voice explanations (Eleven Labs TTS)
-  - Structured teaching sessions with progress tracking
-  - Visual cell highlighting with color-coded annotations
-  - Step-by-step puzzle solving guidance
-  - Strategy explanation (naked singles, hidden singles, etc.)
-  - Adaptive difficulty based on player level
-  - Pause/Resume/Stop controls for teaching sessions
-  
-- **Game Controls**
-  - Start screen with difficulty selection
-  - Pause/Resume game functionality
-  - Stop game and return to start
-  - New game with different difficulties
-  - Reset current puzzle
-
-### Chess Game (Planned)
-- Chess board with piece movement
-- Move validation and game rules
-- AI opponent with adjustable difficulty
-- Opening book and endgame tablebase
-- Interactive AI chess tutor
-- Position analysis and best move suggestions
-- Step-by-step opening theory lessons
-
-## Quick Start
-
-### Prerequisites
-- Node.js 20+
-- Python 3.12+
-- OpenAI API key (or other LLM provider)
-
-### Installation
-
-1. **Clone and install dependencies:**
-```bash
-cd gameleraning
-npm install
-```
-
-2. **Configure LLM Provider:**
-
-Edit `agent/.env` and add your API key:
-```env
-LLM_PROVIDER=openai
-OPENAI_API_KEY=your-key-here
-OPENAI_MODEL=gpt-4o-mini
-```
-
-For other providers, see [LLM Configuration](#llm-configuration) below.
-
-3. **Start the development servers:**
-```bash
-npm run dev
-```
-
-This starts both:
-- Frontend (Next.js): http://localhost:3000
-- Agent (LangGraph): http://localhost:8123
-
-4. **Open the app:**
-Navigate to http://localhost:3000 and start playing!
-
-## How to Play Sudoku
-
-1. Click any cell to select it
-2. Use number pad or keyboard (1-9) to place numbers
-3. Press Delete/Backspace to clear a cell
-4. Use arrow keys to navigate
-5. Click "Hint" if you need help
-6. Chat with the AI tutor for strategy explanations!
-
-## LLM Configuration
-
-### OpenAI (Default)
-```env
-LLM_PROVIDER=openai
-OPENAI_API_KEY=sk-...
-OPENAI_MODEL=gpt-4o-mini
-```
-
-### Azure OpenAI
-```env
-LLM_PROVIDER=azure-openai
-AZURE_OPENAI_API_KEY=your-key
-AZURE_OPENAI_ENDPOINT=https://your-endpoint.openai.azure.com/
-AZURE_OPENAI_DEPLOYMENT=gpt-4o
-```
-
-### Anthropic Claude
-```env
-LLM_PROVIDER=anthropic
-ANTHROPIC_API_KEY=sk-ant-...
-ANTHROPIC_MODEL=claude-3-5-sonnet-20241022
-```
-
-### Ollama (Local)
-```env
-LLM_PROVIDER=ollama
-OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=llama3.1:8b
-```
-
-## Voice Configuration (ElevenLabs)
-
-LearnPlay.ai uses ElevenLabs for natural voice explanations during teaching sessions.
-
-### Setup
-
-1. **Get an API key** from [ElevenLabs](https://elevenlabs.io/) (free tier available)
-2. **Add to `agent/.env`**:
-
-```env
-ELEVENLABS_API_KEY=your-elevenlabs-api-key
-ELEVENLABS_VOICE_ID=JBFqnCBsd6RMkjVDRZzb  # Optional, defaults to "George"
-```
-
-### Voice Settings
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| Voice ID | `JBFqnCBsd6RMkjVDRZzb` | George voice (free tier) |
-| Model | `eleven_multilingual_v2` | Multilingual support |
-| Stability | `0.5` | Voice consistency |
-| Similarity Boost | `0.75` | Voice clarity |
-| Output Format | MP3 44100Hz | High quality audio |
-
-### Available Voices
-
-You can use any ElevenLabs voice ID. Popular free-tier options:
-- `JBFqnCBsd6RMkjVDRZzb` - George (default, male)
-- `21m00Tcm4TlvDq8ikWAM` - Rachel (female)
-- `AZnzlk1XvdvUeBnXmlld` - Domi (female)
-
-### Fallback Behavior
-
-If ElevenLabs is not configured or unavailable:
-- The app gracefully falls back to browser's built-in Text-to-Speech
-- Teaching sessions continue without interruption
-- A message indicates TTS is unavailable
-
 ## Architecture
 
 LearnPlay.ai uses a modern AI-first architecture with CopilotKit's AG-UI (Agent-User Interface) protocol enabling seamless communication between the React frontend and Python AI agent.
@@ -333,6 +162,14 @@ stateDiagram-v2
     Paused --> Teaching: User resumes
 ```
 
+### Technology Stack
+
+- **Frontend**: React 19, Next.js 16, TypeScript 5
+- **UI/Animations**: Tailwind CSS 4, Framer Motion
+- **AI Integration**: CopilotKit 1.51 (AG-UI protocol)
+- **Agent Framework**: LangGraph 1.0, LangChain 1.2
+- **LLM Providers**: OpenAI, Azure OpenAI, Anthropic, Ollama
+
 ### Directory Structure
 
 #### Frontend (Next.js + React)
@@ -371,30 +208,175 @@ agent/
 └── pyproject.toml        # Python dependencies
 ```
 
-## Technology Stack
+## Features
 
-- **Frontend**: React 19, Next.js 16, TypeScript 5
-- **UI/Animations**: Tailwind CSS 4, Framer Motion
-- **AI Integration**: CopilotKit 1.51 (AG-UI protocol)
-- **Agent Framework**: LangGraph 1.0, LangChain 1.2
-- **LLM Providers**: OpenAI, Azure OpenAI, Anthropic, Ollama
+### Sudoku Game (Fully Implemented)
+- **Complete Game Mechanics**
+  - Puzzle generation with 4 difficulty levels (Easy, Medium, Hard, Expert)
+  - Interactive board with cell selection and number placement
+  - Keyboard shortcuts and number pad input
+  - Undo/Redo functionality with move history
+  - Smart hint system with strategy-based suggestions
+  - Real-time validation and error detection
+  - Timer and mistake tracking
 
-## AI Teaching Strategies
+- **AI Teaching Features**
+  - Interactive AI tutor with voice explanations (Eleven Labs TTS)
+  - Structured teaching sessions with progress tracking
+  - Visual cell highlighting with color-coded annotations
+  - Step-by-step puzzle solving guidance
+  - Strategy explanation (naked singles, hidden singles, etc.)
+  - Adaptive difficulty based on player level
+  - Pause/Resume/Stop controls for teaching sessions
+  
+- **Game Controls**
+  - Start screen with difficulty selection
+  - Pause/Resume game functionality
+  - Stop game and return to start
+  - New game with different difficulties
+  - Reset current puzzle
+
+### Chess Game (Planned)
+- Chess board with piece movement
+- Move validation and game rules
+- AI opponent with adjustable difficulty
+- Opening book and endgame tablebase
+- Interactive AI chess tutor
+- Position analysis and best move suggestions
+- Step-by-step opening theory lessons
+
+### AI Teaching Strategies
 
 The AI tutor teaches these Sudoku techniques:
 
-### Beginner Level
+#### Beginner Level
 - **Naked Single**: Only one number can go in a cell
 - **Hidden Single**: A number can only go in one cell within a row/column/box
 
-### Intermediate Level
+#### Intermediate Level
 - **Naked Pair**: Two cells with same two candidates
 - **Pointing Pair**: Candidates pointing to eliminate others
 
-### Advanced Level
+#### Advanced Level
 - **X-Wing**: Advanced elimination pattern
 - **Swordfish**: Complex pattern recognition
 - **XY-Wing**: Chain-based technique
+
+## Quick Start
+
+### Prerequisites
+- Node.js 20+
+- Python 3.12+
+- OpenAI API key (or other LLM provider)
+
+### Installation
+
+1. **Clone and install dependencies:**
+```bash
+cd gameleraning
+npm install
+```
+
+2. **Configure LLM Provider:**
+
+Edit `agent/.env` and add your API key:
+```env
+LLM_PROVIDER=openai
+OPENAI_API_KEY=your-key-here
+OPENAI_MODEL=gpt-4o-mini
+```
+
+For other providers, see [LLM Configuration](#llm-configuration) below.
+
+3. **Start the development servers:**
+```bash
+npm run dev
+```
+
+This starts both:
+- Frontend (Next.js): http://localhost:3000
+- Agent (LangGraph): http://localhost:8123
+
+4. **Open the app:**
+Navigate to http://localhost:3000 and start playing!
+
+## How to Play Sudoku
+
+1. Click any cell to select it
+2. Use number pad or keyboard (1-9) to place numbers
+3. Press Delete/Backspace to clear a cell
+4. Use arrow keys to navigate
+5. Click "Hint" if you need help
+6. Chat with the AI tutor for strategy explanations!
+
+## LLM Configuration
+
+### OpenAI (Default)
+```env
+LLM_PROVIDER=openai
+OPENAI_API_KEY=sk-...
+OPENAI_MODEL=gpt-4o-mini
+```
+
+### Azure OpenAI
+```env
+LLM_PROVIDER=azure-openai
+AZURE_OPENAI_API_KEY=your-key
+AZURE_OPENAI_ENDPOINT=https://your-endpoint.openai.azure.com/
+AZURE_OPENAI_DEPLOYMENT=gpt-4o
+```
+
+### Anthropic Claude
+```env
+LLM_PROVIDER=anthropic
+ANTHROPIC_API_KEY=sk-ant-...
+ANTHROPIC_MODEL=claude-3-5-sonnet-20241022
+```
+
+### Ollama (Local)
+```env
+LLM_PROVIDER=ollama
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=llama3.1:8b
+```
+
+## Voice Configuration (ElevenLabs)
+
+LearnPlay.ai uses ElevenLabs for natural voice explanations during teaching sessions.
+
+### Setup
+
+1. **Get an API key** from [ElevenLabs](https://elevenlabs.io/) (free tier available)
+2. **Add to `agent/.env`**:
+
+```env
+ELEVENLABS_API_KEY=your-elevenlabs-api-key
+ELEVENLABS_VOICE_ID=JBFqnCBsd6RMkjVDRZzb  # Optional, defaults to "George"
+```
+
+### Voice Settings
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| Voice ID | `JBFqnCBsd6RMkjVDRZzb` | George voice (free tier) |
+| Model | `eleven_multilingual_v2` | Multilingual support |
+| Stability | `0.5` | Voice consistency |
+| Similarity Boost | `0.75` | Voice clarity |
+| Output Format | MP3 44100Hz | High quality audio |
+
+### Available Voices
+
+You can use any ElevenLabs voice ID. Popular free-tier options:
+- `JBFqnCBsd6RMkjVDRZzb` - George (default, male)
+- `21m00Tcm4TlvDq8ikWAM` - Rachel (female)
+- `AZnzlk1XvdvUeBnXmlld` - Domi (female)
+
+### Fallback Behavior
+
+If ElevenLabs is not configured or unavailable:
+- The app gracefully falls back to browser's built-in Text-to-Speech
+- Teaching sessions continue without interruption
+- A message indicates TTS is unavailable
 
 ## Development
 
