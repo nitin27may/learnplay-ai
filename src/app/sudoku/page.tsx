@@ -9,7 +9,7 @@ import { TeachingProgress } from '@/components/TeachingProgress';
 import { CellAnnotation } from '@/lib/sudoku/annotations';
 import { GameMode, SudokuGrid } from '@/lib/sudoku/types';
 import { TextMessage, MessageRole } from '@copilotkit/runtime-client-gql';
-import { analyzeStrategies } from '@/lib/sudoku/solver';
+import { analyzeStrategies, findConflicts } from '@/lib/sudoku/solver';
 
 // Type for external cell updates
 interface ExternalCellUpdate {
@@ -36,6 +36,12 @@ export default function SudokuPage() {
   const [currentStep, setCurrentStep] = useState('');
   const [totalSteps, setTotalSteps] = useState(0);
   const [currentStepNumber, setCurrentStepNumber] = useState(0);
+  
+  // Track user's last move for wrong-move analysis
+  const [lastUserMove, setLastUserMove] = useState<{row: number, col: number, value: number | null} | null>(null);
+  
+  // Show "Need a hint?" prompt after user chooses to try themselves
+  const [showHintPrompt, setShowHintPrompt] = useState(false);
 
   // CopilotKit chat hook for programmatic messaging
   const { appendMessage, isLoading } = useCopilotChat();
@@ -56,8 +62,21 @@ export default function SudokuPage() {
     }
   }, [currentGrid]);
 
-  // Handle grid changes - update agent state  
+  // Handle grid changes - update agent state and track user moves
   const handleGridChange = useCallback((newGrid: (number | null)[][]) => {
+    // Detect what cell changed (for wrong-move analysis)
+    if (currentGrid.length > 0) {
+      for (let r = 0; r < 9; r++) {
+        for (let c = 0; c < 9; c++) {
+          if (newGrid[r][c] !== currentGrid[r][c] && newGrid[r][c] !== null) {
+            console.log('\ud83d\udcdd User placed:', newGrid[r][c], 'at', r, c);
+            setLastUserMove({ row: r, col: c, value: newGrid[r][c] });
+            break;
+          }
+        }
+      }
+    }
+    
     setCurrentGrid(newGrid);
     setState((prev: Record<string, unknown>) => ({
       ...prev,
@@ -68,7 +87,7 @@ export default function SudokuPage() {
       setAnnotations([]);
       setAnnotationMessage('');
     }
-  }, [setState, annotations.length]);
+  }, [setState, annotations.length, currentGrid]);
 
   // Frontend tool for managing teaching state
   useFrontendTool({
@@ -300,7 +319,67 @@ export default function SudokuPage() {
       return `Placed ${value} at row ${row}, column ${col}`;
     },
   });
-
+  // Frontend tool for analyzing if user made a wrong move
+  useFrontendTool({
+    name: 'analyzeWrongMove',
+    description: 'Check if the user recently made a wrong move and explain why it conflicts. Call this BEFORE giving hints to provide better feedback. Returns conflicting cells with yellow (user cell) and red (conflict) highlights.',
+    parameters: [],
+    handler() {
+      console.log('\ud83d\udd0d Analyzing for wrong moves, lastUserMove:', lastUserMove);
+      
+      if (!lastUserMove || lastUserMove.value === null) {
+        return JSON.stringify({
+          hasWrongMove: false,
+          message: 'No recent user move to analyze'
+        });
+      }
+      
+      const conflicts = findConflicts(
+        currentGrid as SudokuGrid,
+        lastUserMove.row,
+        lastUserMove.col,
+        lastUserMove.value
+      );
+      
+      if (conflicts.length > 0) {
+        console.log('\u274c Found conflicts:', conflicts);
+        
+        // Build highlight cells: user's cell in yellow, conflicting cells in red
+        const highlightCells = [
+          {
+            row: lastUserMove.row,
+            col: lastUserMove.col,
+            type: 'highlight',
+            color: 'yellow',
+            label: String(lastUserMove.value)
+          },
+          ...conflicts.map(c => ({
+            row: c.conflictingCell.row,
+            col: c.conflictingCell.col,
+            type: 'highlight',
+            color: 'red',
+            label: String(lastUserMove.value)
+          }))
+        ];
+        
+        return JSON.stringify({
+          hasWrongMove: true,
+          row: lastUserMove.row,
+          col: lastUserMove.col,
+          value: lastUserMove.value,
+          conflicts: conflicts,
+          conflictType: conflicts[0].type,
+          explanation: conflicts[0].message,
+          highlightCells: highlightCells
+        });
+      }
+      
+      return JSON.stringify({
+        hasWrongMove: false,
+        message: 'The last move has no conflicts'
+      });
+    },
+  });
   // Frontend tool for AI to highlight cells
   useFrontendTool({
     name: 'highlightCells',
@@ -449,6 +528,37 @@ export default function SudokuPage() {
     }
   }, [appendMessage, isLoading]);
 
+  // Handler for "I'll Try Myself" button - ends teaching but shows hint prompt
+  const handleTryMyself = useCallback(() => {
+    console.log('💪 User wants to try themselves');
+    setIsTeaching(false);
+    setIsPaused(false);
+    setAnnotations([]);
+    setAnnotationMessage('');
+    setShowHintPrompt(true); // Show the "Need a hint?" prompt
+  }, []);
+
+  // Handler for quick hint from the hint prompt
+  const handleQuickHint = useCallback(async () => {
+    console.log('💡 User requested quick hint');
+    setShowHintPrompt(false);
+    try {
+      await appendMessage(
+        new TextMessage({
+          role: MessageRole.User,
+          content: 'Give me a hint for my next move',
+        })
+      );
+    } catch (error) {
+      console.error('Failed to send hint request:', error);
+    }
+  }, [appendMessage]);
+
+  // Handler to dismiss the hint prompt
+  const handleDismissHintPrompt = useCallback(() => {
+    setShowHintPrompt(false);
+  }, []);
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       <TeachingProgress
@@ -464,9 +574,14 @@ export default function SudokuPage() {
           setIsPaused(false);
           setAnnotations([]);
           setAnnotationMessage('');
+          setShowHintPrompt(false);
         }}
         onNext={handleNextStep}
         isNextDisabled={isLoading}
+        onTryMyself={handleTryMyself}
+        showHintPrompt={showHintPrompt}
+        onQuickHint={handleQuickHint}
+        onDismissHintPrompt={handleDismissHintPrompt}
       />
       <CopilotSidebar
         clickOutsideToClose={false}

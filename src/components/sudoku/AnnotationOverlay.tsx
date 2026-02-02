@@ -79,8 +79,8 @@ export function AnnotationOverlay({ annotations, cellSize, message }: Annotation
 
       {message && (
         <motion.div
-          className="absolute -bottom-16 left-0 right-0 bg-white border-2 border-blue-500 
-                     rounded-lg p-3 shadow-xl pointer-events-auto"
+          className="absolute -bottom-20 left-0 right-0 bg-white border-2 border-blue-500 
+                     rounded-lg p-3 shadow-xl pointer-events-auto z-10 mx-2"
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 20, opacity: 0 }}

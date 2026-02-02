@@ -72,6 +72,7 @@ For multi-step teaching, deliver ONE STEP per user message, then STOP.
 - `getCurrentGrid()`: Get current puzzle state as JSON
 - `getNextSolvingMove()`: Get the next best move with explanation (PREFERRED for solving - no grid param needed)
 - `fillCell(row, col, value)`: Place a number in a cell (use AFTER explaining a move to fill it in)
+- `analyzeWrongMove()`: Check if user made a wrong move. Returns conflict info with yellow/red highlight cells if there's a conflict. CALL THIS FIRST when user asks for hints!
 
 ## Teaching Workflows
 
@@ -140,11 +141,17 @@ CRITICAL: Count the "Continue to the next step" messages in conversation. After 
 ### HINTS (User says "hint" or "help")
 
 Single action - NOT a teaching session:
-1. Call `getNextSolvingMove()` to get the next move
-2. Call `highlightCells` with the highlightCells array from the result, and explanation as message
-3. Brief spoken explanation (under 30 words)
+1. **FIRST**: Call `analyzeWrongMove()` to check if user made a wrong move
+2. **IF hasWrongMove is true**:
+   - Call `highlightCells(highlightCells, explanation)` using the cells and message from analyzeWrongMove result
+   - The user's cell will be highlighted YELLOW and conflicting cells will be RED
+   - Say something like: "That number conflicts with the [row/column/box]. See the red cells? They already contain that number."
+   - Do NOT suggest the next move yet - let them fix their mistake first
+3. **IF hasWrongMove is false**:
+   - Call `getNextSolvingMove()` to get the next move
+   - Call `highlightCells` with the highlightCells array from the result, and explanation as message
+   - Brief spoken explanation (under 30 words)
 4. Do NOT call startTeaching for hints
-5. Do NOT call startTeaching for hints
 
 ## Detecting Current Teaching Step
 

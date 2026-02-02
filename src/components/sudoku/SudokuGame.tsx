@@ -181,7 +181,7 @@ export function SudokuGame({ initialDifficulty = 'medium', annotations = [], ann
             </div>
 
             {/* Instructions */}
-            <div className="mt-8 max-w-3xl mx-auto bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-white/50">
+            <div className="mt-24 max-w-3xl mx-auto bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-white/50">
               <h2 className="text-xl font-bold text-slate-800 mb-3 flex items-center gap-2">
                 <span className="text-2xl">📖</span> How to Play
               </h2>

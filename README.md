@@ -279,11 +279,14 @@ npm install
 
 2. **Configure LLM Provider:**
 
-Edit `agent/.env` and add your API key:
+Edit `agent/.env` and add your API keys:
 ```env
 LLM_PROVIDER=openai
 OPENAI_API_KEY=your-key-here
 OPENAI_MODEL=gpt-4o-mini
+
+# Optional: ElevenLabs for voice teaching (free tier available)
+ELEVENLABS_API_KEY=your-elevenlabs-key
 ```
 
 For other providers, see [LLM Configuration](#llm-configuration) below.

@@ -209,3 +209,66 @@ function findNakedPairsInUnit(
   
   return pairs;
 }
+
+/**
+ * Conflict information for wrong move analysis
+ */
+export interface ConflictInfo {
+  type: 'row' | 'column' | 'box';
+  conflictingCell: { row: number; col: number };
+  message: string;
+}
+
+/**
+ * Find all conflicts for a value placed at a specific cell
+ * Used to explain why a user's move is wrong
+ */
+export function findConflicts(
+  grid: SudokuGrid,
+  row: number,
+  col: number,
+  value: number | null
+): ConflictInfo[] {
+  const conflicts: ConflictInfo[] = [];
+
+  if (value === null || value === 0) return conflicts;
+
+  // Check row conflicts
+  for (let c = 0; c < 9; c++) {
+    if (c !== col && grid[row][c] === value) {
+      conflicts.push({
+        type: 'row',
+        conflictingCell: { row, col: c },
+        message: `The ${value} you placed conflicts with another ${value} in column ${c + 1} of this row`
+      });
+    }
+  }
+
+  // Check column conflicts
+  for (let r = 0; r < 9; r++) {
+    if (r !== row && grid[r][col] === value) {
+      conflicts.push({
+        type: 'column',
+        conflictingCell: { row: r, col },
+        message: `The ${value} you placed conflicts with another ${value} in row ${r + 1} of this column`
+      });
+    }
+  }
+
+  // Check 3x3 box conflicts
+  const boxStartRow = Math.floor(row / 3) * 3;
+  const boxStartCol = Math.floor(col / 3) * 3;
+  for (let r = boxStartRow; r < boxStartRow + 3; r++) {
+    for (let c = boxStartCol; c < boxStartCol + 3; c++) {
+      if ((r !== row || c !== col) && grid[r][c] === value) {
+        conflicts.push({
+          type: 'box',
+          conflictingCell: { row: r, col: c },
+          message: `The ${value} you placed conflicts with another ${value} in the same 3x3 box`
+        });
+      }
+    }
+  }
+
+  return conflicts;
+}
