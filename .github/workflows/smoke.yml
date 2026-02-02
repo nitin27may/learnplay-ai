@@ -41,6 +41,7 @@ jobs:
       - name: Lint Python (ruff)
         run: |
           cd agent
+          uv run ruff check . --fix --unsafe-fixes
           uv run ruff check .
 
       - name: Verify Python agent imports
