@@ -277,7 +277,14 @@ cd gameleraning
 npm install
 ```
 
-2. **Configure LLM Provider:**
+2. **Install Python dependencies:**
+```bash
+cd agent
+uv sync
+cd ..
+```
+
+3. **Configure LLM Provider:**
 
 Edit `agent/.env` and add your API keys:
 ```env
@@ -287,11 +294,12 @@ OPENAI_MODEL=gpt-4o-mini
 
 # Optional: ElevenLabs for voice teaching (free tier available)
 ELEVENLABS_API_KEY=your-elevenlabs-key
+ELEVENLABS_VOICE_ID=JBFqnCBsd6RMkjVDRZzb  # Optional, defaults to "George"
 ```
 
 For other providers, see [LLM Configuration](#llm-configuration) below.
 
-3. **Start the development servers:**
+4. **Start the development servers:**
 ```bash
 npm run dev
 ```
@@ -300,7 +308,7 @@ This starts both:
 - Frontend (Next.js): http://localhost:3000
 - Agent (LangGraph): http://localhost:8123
 
-4. **Open the app:**
+5. **Open the app:**
 Navigate to http://localhost:3000 and start playing!
 
 ## How to Play Sudoku
