@@ -273,7 +273,7 @@ The AI tutor teaches these Sudoku techniques:
 
 1. **Clone and install dependencies:**
 ```bash
-cd gameleraning
+cd learnplay-ai
 npm install
 ```
 
