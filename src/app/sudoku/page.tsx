@@ -2,12 +2,22 @@
 
 import { SudokuGame } from '@/components/sudoku/SudokuGame';
 import { CopilotSidebar } from '@copilotkit/react-ui';
-import { useCoAgent, useFrontendTool } from '@copilotkit/react-core';
+import { useCoAgent, useFrontendTool, useCopilotChat } from '@copilotkit/react-core';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useVoiceMode } from '@/lib/hooks/useVoiceMode';
 import { TeachingProgress } from '@/components/TeachingProgress';
 import { CellAnnotation } from '@/lib/sudoku/annotations';
-import { GameMode } from '@/lib/sudoku/types';
+import { GameMode, SudokuGrid } from '@/lib/sudoku/types';
+import { TextMessage, MessageRole } from '@copilotkit/runtime-client-gql';
+import { analyzeStrategies } from '@/lib/sudoku/solver';
+
+// Type for external cell updates
+interface ExternalCellUpdate {
+  row: number;
+  col: number;
+  value: number | null;
+  timestamp: number;
+}
 
 export default function SudokuPage() {
   const voice = useVoiceMode();
@@ -17,12 +27,18 @@ export default function SudokuPage() {
   const [currentGrid, setCurrentGrid] = useState<(number | null)[][]>([]);
   const prevGridRef = useRef<string>('');
   
+  // State for AI-controlled cell placement
+  const [externalCellUpdate, setExternalCellUpdate] = useState<ExternalCellUpdate | null>(null);
+  
   // Teaching state
   const [isTeaching, setIsTeaching] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [currentStep, setCurrentStep] = useState('');
   const [totalSteps, setTotalSteps] = useState(0);
   const [currentStepNumber, setCurrentStepNumber] = useState(0);
+
+  // CopilotKit chat hook for programmatic messaging
+  const { appendMessage, isLoading } = useCopilotChat();
 
   // Connect to the Sudoku teaching agent
   const { state, setState } = useCoAgent({
@@ -192,6 +208,99 @@ export default function SudokuPage() {
     },
   });
 
+  // Frontend tool to get the next solving move (combines grid retrieval + analysis)
+  useFrontendTool({
+    name: 'getNextSolvingMove',
+    description: 'Analyze the current grid and return the next best cell to fill with explanation. Returns row, col, value, and explanation. Use this for step-by-step solving - much simpler than calling getCurrentGrid then suggest_next_move.',
+    parameters: [],
+    handler() {
+      console.log('🎯 Analyzing grid for next move:', currentGrid);
+      
+      if (currentGrid.length === 0) {
+        return JSON.stringify({
+          has_suggestion: false,
+          message: 'No grid loaded yet. Please start a game first.'
+        });
+      }
+      
+      const strategies = analyzeStrategies(currentGrid as SudokuGrid);
+      
+      if (strategies.length === 0) {
+        return JSON.stringify({
+          has_suggestion: false,
+          message: 'No obvious moves found. The puzzle may need advanced techniques.'
+        });
+      }
+      
+      // Get the best strategy (first one found - naked singles are prioritized)
+      const bestMove = strategies[0];
+      const cell = bestMove.cells[0];
+      
+      // Generate explanation based on strategy type
+      let explanation = bestMove.description;
+      if (bestMove.strategy === 'naked_single') {
+        explanation = `This cell can only be ${bestMove.value} because all other numbers are already in its row, column, or box.`;
+      } else if (bestMove.strategy.includes('hidden_single')) {
+        explanation = `The number ${bestMove.value} can only go in this cell within its ${bestMove.strategy.includes('row') ? 'row' : bestMove.strategy.includes('col') ? 'column' : 'box'}.`;
+      }
+      
+      console.log('✅ Found move:', { row: cell.row, col: cell.col, value: bestMove.value, strategy: bestMove.strategy });
+      
+      return JSON.stringify({
+        has_suggestion: true,
+        row: cell.row,
+        col: cell.col,
+        value: bestMove.value,
+        strategy: bestMove.strategy,
+        explanation: explanation,
+        // Pre-formatted cells for highlightCells
+        highlightCells: [{
+          row: cell.row,
+          col: cell.col,
+          type: 'highlight',
+          color: 'green',
+          label: String(bestMove.value)
+        }]
+      });
+    },
+  });
+
+  // Frontend tool for AI to place a number in a cell (for step-by-step solving)
+  useFrontendTool({
+    name: 'fillCell',
+    description: 'Place a number in a specific cell. Use this after explaining a move during step-by-step solving to actually fill in the cell so the solver can find the next move.',
+    parameters: [
+      {
+        name: 'row',
+        description: 'Row index (0-8)',
+        type: 'number',
+        required: true,
+      },
+      {
+        name: 'col',
+        description: 'Column index (0-8)',
+        type: 'number',
+        required: true,
+      },
+      {
+        name: 'value',
+        description: 'The value to place (1-9)',
+        type: 'number',
+        required: true,
+      },
+    ],
+    handler({ row, col, value }) {
+      console.log('🤖 AI filling cell:', { row, col, value });
+      setExternalCellUpdate({
+        row,
+        col,
+        value,
+        timestamp: Date.now()
+      });
+      return `Placed ${value} at row ${row}, column ${col}`;
+    },
+  });
+
   // Frontend tool for AI to highlight cells
   useFrontendTool({
     name: 'highlightCells',
@@ -316,8 +425,29 @@ export default function SudokuPage() {
   });
 
   // Voice transcript is displayed - user can copy/paste or it can be shown in the UI
-  // For now, the transcript is just displayed and users can type it into the chat
-  // CopilotKit doesn't expose a direct sendMessage API in the current version
+  // Using useCopilotChat's appendMessage to programmatically continue teaching
+
+  // Handler for Next Step button - sends continuation message to agent
+  const handleNextStep = useCallback(async () => {
+    if (isLoading) return; // Don't send if already processing
+    
+    setIsPaused(false);
+    // Clear previous annotations before next step
+    setAnnotations([]);
+    setAnnotationMessage('');
+    
+    console.log('📤 Sending continuation message to agent');
+    try {
+      await appendMessage(
+        new TextMessage({
+          role: MessageRole.User,
+          content: 'Continue to the next step',
+        })
+      );
+    } catch (error) {
+      console.error('Failed to send continuation message:', error);
+    }
+  }, [appendMessage, isLoading]);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -335,15 +465,8 @@ export default function SudokuPage() {
           setAnnotations([]);
           setAnnotationMessage('');
         }}
-        onNext={() => {
-          setIsPaused(false);
-          // Trigger agent continuation by updating state
-          setState({
-            ...state,
-            next_step_requested: true,
-            timestamp: Date.now(),
-          });
-        }}
+        onNext={handleNextStep}
+        isNextDisabled={isLoading}
       />
       <CopilotSidebar
         clickOutsideToClose={false}
@@ -363,7 +486,7 @@ export default function SudokuPage() {
           },
           {
             title: 'Solve Step-by-Step',
-            message: 'Teach me how to solve this puzzle step by step',
+            message: 'Solve this puzzle step by step. Show me ONE cell at a time with green highlight and the number to place. Start now.',
           },
           {
             title: 'Continue',
@@ -381,6 +504,7 @@ export default function SudokuPage() {
             annotations={annotations}
             annotationMessage={annotationMessage}
             onGridChange={handleGridChange}
+            externalCellUpdate={externalCellUpdate}
           />
         </div>
       </CopilotSidebar>

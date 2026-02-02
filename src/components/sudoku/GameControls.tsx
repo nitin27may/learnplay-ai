@@ -40,30 +40,30 @@ export function GameControls({
   const difficulties: Difficulty[] = ['easy', 'medium', 'hard', 'expert'];
 
   return (
-    <div className="flex flex-col gap-4 p-6 bg-white rounded-lg shadow-lg">
+    <div className="flex flex-col gap-4 p-6 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50">
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-4 text-center">
-        <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border-2 border-blue-200">
-          <div className="text-xs text-gray-600 font-semibold uppercase tracking-wide">Time</div>
-          <div className="text-3xl font-bold text-blue-600 mt-1">
+      <div className="grid grid-cols-2 gap-3 text-center">
+        <div className="p-3 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl border border-indigo-200/50 shadow-sm">
+          <div className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Time</div>
+          <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mt-0.5">
             {formatTime(gameState.elapsedTime)}
           </div>
         </div>
-        <div className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border-2 border-purple-200">
-          <div className="text-xs text-gray-600 font-semibold uppercase tracking-wide">Mistakes</div>
-          <div className="text-3xl font-bold text-purple-600 mt-1">
+        <div className="p-3 bg-gradient-to-br from-purple-50 to-fuchsia-100 rounded-xl border border-purple-200/50 shadow-sm">
+          <div className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Mistakes</div>
+          <div className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-fuchsia-600 bg-clip-text text-transparent mt-0.5">
             {gameState.mistakes}
           </div>
         </div>
-        <div className="p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border-2 border-green-200">
-          <div className="text-xs text-gray-600 font-semibold uppercase tracking-wide">Hints Used</div>
-          <div className="text-3xl font-bold text-green-600 mt-1">
+        <div className="p-3 bg-gradient-to-br from-emerald-50 to-teal-100 rounded-xl border border-emerald-200/50 shadow-sm">
+          <div className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Hints Used</div>
+          <div className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mt-0.5">
             {gameState.hintsUsed}
           </div>
         </div>
-        <div className="p-4 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl border-2 border-orange-200">
-          <div className="text-xs text-gray-600 font-semibold uppercase tracking-wide">Difficulty</div>
-          <div className="text-2xl font-bold text-orange-600 mt-1 capitalize">
+        <div className="p-3 bg-gradient-to-br from-amber-50 to-orange-100 rounded-xl border border-amber-200/50 shadow-sm">
+          <div className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Difficulty</div>
+          <div className="text-xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent mt-0.5 capitalize">
             {gameState.difficulty}
           </div>
         </div>
@@ -140,10 +140,10 @@ export function GameControls({
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="p-4 bg-gradient-to-r from-green-400 to-blue-500 text-white rounded-lg text-center"
+          className="p-4 bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-500 text-white rounded-xl text-center shadow-lg"
         >
-          <div className="text-xl font-bold mb-1">Congratulations!</div>
-          <div className="text-sm">
+          <div className="text-xl font-bold mb-1">🎉 Congratulations!</div>
+          <div className="text-sm opacity-90">
             Completed in {formatTime(gameState.elapsedTime)}
           </div>
         </motion.div>
@@ -168,15 +168,15 @@ function ControlButton({
   return (
     <motion.button
       className={`
-        flex-1 py-2.5 rounded-lg font-medium text-sm
+        flex-1 py-2.5 rounded-xl font-medium text-sm
         ${disabled
-          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+          ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
           : variant === 'primary'
-          ? 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+          ? 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 shadow-sm'
           : variant === 'accent'
-          ? 'bg-blue-500 text-white hover:bg-blue-600'
-          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}
-        transition-colors
+          ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 shadow-md'
+          : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'}
+        transition-all duration-200
       `}
       onClick={onClick}
       disabled={disabled}

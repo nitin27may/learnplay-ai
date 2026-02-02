@@ -76,6 +76,53 @@ export function useSudokuGame(initialDifficulty: Difficulty = 'medium') {
     });
   }, []);
 
+  // Place a number at specific coordinates (for AI-assisted solving)
+  const placeNumberAt = useCallback((row: number, col: number, value: CellValue) => {
+    setGameState(prev => {
+      const { grid, fixedCells, solution } = prev;
+      
+      // Don't modify fixed cells
+      if (fixedCells[row][col]) {
+        console.log('Cannot modify fixed cell at', row, col);
+        return prev;
+      }
+
+      const newGrid = grid.map(r => [...r]);
+      const previousValue = newGrid[row][col];
+      newGrid[row][col] = value;
+
+      // Track move
+      const move: SudokuMove = {
+        row,
+        col,
+        value,
+        previousValue,
+        timestamp: Date.now()
+      };
+
+      setMoveHistory(history => [...history, move]);
+      setRedoStack([]);
+
+      // Check if move is incorrect
+      let newMistakes = prev.mistakes;
+      if (value !== null && value !== solution[row][col]) {
+        newMistakes++;
+      }
+
+      const isComplete = isPuzzleComplete(newGrid);
+
+      console.log('AI placed', value, 'at row', row, 'col', col);
+
+      return {
+        ...prev,
+        grid: newGrid,
+        mistakes: newMistakes,
+        isComplete,
+        selectedCell: { row, col } // Also select the cell to highlight it
+      };
+    });
+  }, []);
+
   const useHint = useCallback(() => {
     setGameState(prev => {
       const hint = getHint(prev.grid, prev.solution);
@@ -167,6 +214,7 @@ export function useSudokuGame(initialDifficulty: Difficulty = 'medium') {
     gameState,
     selectCell,
     placeNumber,
+    placeNumberAt,
     useHint,
     undo,
     redo,

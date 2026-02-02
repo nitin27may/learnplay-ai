@@ -43,8 +43,8 @@ export function SudokuBoard({ gameState, onCellSelect, annotations = [], annotat
   };
 
   return (
-    <div className="inline-block bg-gray-900 p-1 rounded-xl shadow-2xl relative">
-      <div className="grid grid-cols-9 gap-0 bg-white">
+    <div className="inline-block bg-gradient-to-br from-slate-700 to-slate-900 p-1.5 rounded-2xl shadow-2xl shadow-slate-900/30 relative">
+      <div className="grid grid-cols-9 gap-0 bg-white rounded-xl overflow-hidden">
         {grid.map((row, rowIndex) =>
           row.map((cell, colIndex) => (
             <SudokuCell

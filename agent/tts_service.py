@@ -3,12 +3,21 @@ Text-to-Speech service using Eleven Labs API
 """
 
 import os
+import sys
 import requests
 import base64
 from typing import Optional
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# Fix Windows console encoding issues
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass  # Ignore if reconfigure not available
 
 class TTSService:
     """Service for generating speech from text using Eleven Labs"""
@@ -19,7 +28,7 @@ class TTSService:
         self.base_url = "https://api.elevenlabs.io/v1"
         
         if not self.api_key:
-            print("⚠️  Warning: ELEVENLABS_API_KEY not set. TTS will be disabled.")
+            print("[WARNING] ELEVENLABS_API_KEY not set. TTS will be disabled.")
     
     def generate_speech(self, text: str) -> Optional[str]:
         """
@@ -32,7 +41,7 @@ class TTSService:
             Base64 encoded audio string, or None if generation failed
         """
         if not self.api_key:
-            print("⚠️  TTS disabled: No API key")
+            print("[WARNING] TTS disabled: No API key")
             return None
         
         if not text or len(text.strip()) == 0:
@@ -62,19 +71,19 @@ class TTSService:
             if response.status_code == 200:
                 # Encode audio as base64
                 audio_base64 = base64.b64encode(response.content).decode('utf-8')
-                print(f"✅ Generated speech for: {text[:50]}...")
+                print(f"[OK] Generated speech for: {text[:50]}...")
                 return audio_base64
             else:
-                print(f"❌ Eleven Labs API error: {response.status_code}")
+                print(f"[ERROR] Eleven Labs API error: {response.status_code}")
                 try:
                     error_data = response.json()
                     print(f"   Error details: {error_data}")
-                except:
+                except Exception:
                     print(f"   Response: {response.text[:200]}")
                 return None
                 
         except Exception as e:
-            print(f"❌ TTS generation error: {str(e)}")
+            print(f"[ERROR] TTS generation error: {str(e)}")
             return None
     
     def is_available(self) -> bool:
