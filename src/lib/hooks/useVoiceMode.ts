@@ -77,7 +77,7 @@ export function useVoiceMode() {
     try {
       setIsSpeaking(true);
       
-      // Call OpenAI TTS API
+      // Call Eleven Labs TTS API
       const response = await fetch('/api/tts', {
         method: 'POST',
         headers: {
@@ -87,7 +87,7 @@ export function useVoiceMode() {
       });
 
       if (!response.ok) {
-        console.warn('OpenAI TTS failed, using browser fallback');
+        console.warn('Eleven Labs TTS failed, using browser fallback');
         speakWithBrowserTTS(text);
         return;
       }

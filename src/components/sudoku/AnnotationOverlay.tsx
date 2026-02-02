@@ -10,19 +10,19 @@ interface AnnotationOverlayProps {
 }
 
 const colorClasses = {
-  blue: 'bg-blue-500/30 border-blue-500',
-  green: 'bg-green-500/30 border-green-500',
-  yellow: 'bg-yellow-500/30 border-yellow-500',
-  red: 'bg-red-500/30 border-red-500',
-  purple: 'bg-purple-500/30 border-purple-500',
+  blue: 'bg-blue-400/40 border-blue-600',
+  green: 'bg-green-400/40 border-green-600',
+  yellow: 'bg-yellow-400/40 border-yellow-600',
+  red: 'bg-red-400/40 border-red-600',
+  purple: 'bg-purple-400/40 border-purple-600',
 };
 
 const labelColors = {
-  blue: 'bg-blue-500 text-white',
-  green: 'bg-green-500 text-white',
-  yellow: 'bg-yellow-500 text-gray-900',
-  red: 'bg-red-500 text-white',
-  purple: 'bg-purple-500 text-white',
+  blue: 'bg-blue-600 text-white',
+  green: 'bg-green-600 text-white',
+  yellow: 'bg-yellow-600 text-white',
+  red: 'bg-red-600 text-white',
+  purple: 'bg-purple-600 text-white',
 };
 
 export function AnnotationOverlay({ annotations, cellSize, message }: AnnotationOverlayProps) {

@@ -17,4 +17,5 @@ dependencies = [
     "langchain-ollama>=0.2.0",
     "copilotkit>=0.1.74",
     "langgraph-api>=0.6.0",
+    "requests>=2.31.0",
 ]

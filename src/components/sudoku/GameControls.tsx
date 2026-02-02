@@ -12,6 +12,9 @@ interface GameControlsProps {
   onHint: () => void;
   canUndo: boolean;
   canRedo: boolean;
+  isPaused: boolean;
+  onPauseResume: () => void;
+  onStop: () => void;
 }
 
 export function GameControls({
@@ -22,7 +25,10 @@ export function GameControls({
   onRedo,
   onHint,
   canUndo,
-  canRedo
+  canRedo,
+  isPaused,
+  onPauseResume,
+  onStop,
 }: GameControlsProps) {
   const formatTime = (ms: number): string => {
     const seconds = Math.floor(ms / 1000);
@@ -67,28 +73,41 @@ export function GameControls({
       <div className="flex gap-2">
         <ControlButton
           onClick={onUndo}
-          disabled={!canUndo}
-          icon="↶"
+          disabled={!canUndo || isPaused}
           label="Undo"
         />
         <ControlButton
           onClick={onRedo}
-          disabled={!canRedo}
-          icon="↷"
+          disabled={!canRedo || isPaused}
           label="Redo"
         />
         <ControlButton
           onClick={onHint}
-          disabled={gameState.isComplete}
-          icon="💡"
+          disabled={gameState.isComplete || isPaused}
           label="Hint"
+          variant="accent"
+        />
+      </div>
+
+      {/* Game Control Buttons */}
+      <div className="grid grid-cols-2 gap-2">
+        <ControlButton
+          onClick={onPauseResume}
+          disabled={gameState.isComplete}
+          label={isPaused ? "Resume" : "Pause"}
+          variant="secondary"
+        />
+        <ControlButton
+          onClick={onStop}
+          disabled={gameState.isComplete}
+          label="Stop"
+          variant="secondary"
         />
       </div>
 
       <ControlButton
         onClick={onReset}
-        disabled={gameState.isComplete}
-        icon="🔄"
+        disabled={gameState.isComplete || isPaused}
         label="Reset"
         variant="secondary"
       />
@@ -123,7 +142,7 @@ export function GameControls({
           animate={{ scale: 1, opacity: 1 }}
           className="p-4 bg-gradient-to-r from-green-400 to-blue-500 text-white rounded-lg text-center"
         >
-          <div className="text-2xl font-bold mb-1">🎉 Congratulations!</div>
+          <div className="text-xl font-bold mb-1">Congratulations!</div>
           <div className="text-sm">
             Completed in {formatTime(gameState.elapsedTime)}
           </div>
@@ -136,35 +155,33 @@ export function GameControls({
 interface ControlButtonProps {
   onClick: () => void;
   disabled?: boolean;
-  icon: string;
   label: string;
-  variant?: 'primary' | 'secondary';
+  variant?: 'primary' | 'secondary' | 'accent';
 }
 
 function ControlButton({
   onClick,
   disabled,
-  icon,
   label,
   variant = 'primary'
 }: ControlButtonProps) {
   return (
     <motion.button
       className={`
-        flex-1 py-3 rounded-lg font-semibold
+        flex-1 py-2.5 rounded-lg font-medium text-sm
         ${disabled
           ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
           : variant === 'primary'
+          ? 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+          : variant === 'accent'
           ? 'bg-blue-500 text-white hover:bg-blue-600'
-          : 'bg-gray-300 text-gray-700 hover:bg-gray-400'}
-        transition-colors shadow-md
+          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}
+        transition-colors
       `}
       onClick={onClick}
       disabled={disabled}
       whileTap={disabled ? {} : { scale: 0.95 }}
-      whileHover={disabled ? {} : { scale: 1.02 }}
     >
-      <span className="text-lg mr-2">{icon}</span>
       {label}
     </motion.button>
   );

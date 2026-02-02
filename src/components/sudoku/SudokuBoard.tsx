@@ -10,9 +10,10 @@ interface SudokuBoardProps {
   onCellSelect: (row: number, col: number) => void;
   annotations?: CellAnnotation[];
   annotationMessage?: string;
+  disabled?: boolean;
 }
 
-export function SudokuBoard({ gameState, onCellSelect, annotations = [], annotationMessage }: SudokuBoardProps) {
+export function SudokuBoard({ gameState, onCellSelect, annotations = [], annotationMessage, disabled = false }: SudokuBoardProps) {
   const { grid, fixedCells, selectedCell, solution } = gameState;
   const cellSize = 64; // Should match w-16 (4rem = 64px)
 
@@ -58,7 +59,7 @@ export function SudokuBoard({ gameState, onCellSelect, annotations = [], annotat
               isError={isCellError(rowIndex, colIndex)}
               isSameNumber={isSameNumber(rowIndex, colIndex)}
               isRelated={isCellRelated(rowIndex, colIndex)}
-              onClick={() => onCellSelect(rowIndex, colIndex)}
+              onClick={disabled ? undefined : () => onCellSelect(rowIndex, colIndex)}
             />
           ))
         )}

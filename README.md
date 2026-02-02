@@ -1,34 +1,65 @@
-# Game Learning Platform 🎮
+# Game Learning Platform 🎮🤖
 
-An educational games platform with AI-powered teaching capabilities. Built with Next.js, CopilotKit, and LangGraph.
+**An intelligent educational platform that teaches classic board games through AI-powered interactive tutoring.**
 
-## 🎯 Features
+This platform combines the timeless appeal of strategy games (Sudoku and Chess) with cutting-edge AI technology to create an engaging, personalized learning experience. Each game features an AI tutor that explains rules, demonstrates strategies, and teaches step-by-step solutions with interactive visual guidance and voice narration.
 
-### Sudoku Game
-- ✅ Full Sudoku implementation with puzzle generation
-- ✅ Multiple difficulty levels (Easy, Medium, Hard, Expert)
-- ✅ Interactive UI with smooth animations (Framer Motion)
-- ✅ Keyboard shortcuts and number pad
-- ✅ Undo/Redo functionality
-- ✅ Hint system
-- ✅ Timer and mistake tracking
-- ✅ AI tutor integration
+![Next.js](https://img.shields.io/badge/Next.js-16.1-black) ![CopilotKit](https://img.shields.io/badge/CopilotKit-1.51-blue) ![LangGraph](https://img.shields.io/badge/LangGraph-1.0-green) ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
 
-### AI Teaching System
-- ✅ **Multi-LLM Support**: OpenAI, Azure OpenAI, Anthropic Claude, Ollama
-- ✅ **Teaching Modes**: 
-  - Play Mode: Independent play with on-demand help
-  - Teach Mode: Proactive guidance after each move
-  - Practice Mode: Targeted strategy practice
-- ✅ **Strategy Teaching**: Naked singles, hidden singles, naked pairs, and more
-- ✅ **Adaptive Learning**: AI adjusts to player skill level
-- ✅ **Move Analysis**: Real-time feedback and explanations
+## 🎯 Project Vision
 
-### Coming Soon
-- 🔜 Chess game with AI teaching
-- 🔜 Voice mode (speech-to-text and text-to-speech)
-- 🔜 Progress tracking and analytics
-- 🔜 Practice scenarios
+Transform how people learn strategic thinking through games by providing:
+- **Interactive AI Tutors**: Not just hints, but comprehensive teaching with explanations
+- **Visual Learning**: Cell highlighting, annotations, and real-time visual feedback
+- **Voice-Enabled Teaching**: Eleven Labs TTS for natural voice explanations
+- **Adaptive Difficulty**: AI adjusts teaching based on player progress
+- **Step-by-Step Guidance**: Break down complex strategies into digestible steps
+
+## 📖 Documentation
+
+- [Project Overview](docs/PROJECT_OVERVIEW.md) - Vision, goals, and technical approach
+- [Sudoku Game Guide](docs/SUDOKU_GUIDE.md) - Complete Sudoku implementation details
+- [Chess Game Guide](docs/CHESS_GUIDE.md) - Chess game architecture (coming soon)
+- [AI Teaching System](docs/AI_TEACHING.md) - How the AI tutor works
+- [Architecture](docs/ARCHITECTURE.md) - Technical architecture and design decisions
+- [Development Guide](docs/DEVELOPMENT.md) - Setup, development, and deployment
+
+## ✨ Current Features
+
+### 🎲 Sudoku Game (Fully Implemented)
+- **Complete Game Mechanics**
+  - Puzzle generation with 4 difficulty levels (Easy, Medium, Hard, Expert)
+  - Interactive board with cell selection and number placement
+  - Keyboard shortcuts and number pad input
+  - Undo/Redo functionality with move history
+  - Smart hint system with strategy-based suggestions
+  - Real-time validation and error detection
+  - Timer and mistake tracking
+
+- **AI Teaching Features**
+  - Interactive AI tutor with voice explanations (Eleven Labs TTS)
+  - Structured teaching sessions with progress tracking
+  - Visual cell highlighting with color-coded annotations
+  - Step-by-step puzzle solving guidance
+  - Strategy explanation (naked singles, hidden singles, etc.)
+  - Adaptive difficulty based on player level
+  - Pause/Resume/Stop controls for teaching sessions
+  
+- **Game Controls**
+  - Start screen with difficulty selection
+  - Pause/Resume game functionality
+  - Stop game and return to start
+  - New game with different difficulties
+  - Reset current puzzle
+
+### 🎯 Chess Game (Planned)
+- Chess board with piece movement
+- Move validation and game rules
+- AI opponent with adjustable difficulty
+- Opening book and endgame tablebase
+- Interactive AI chess tutor
+- Position analysis and best move suggestions
+- Step-by-step opening theory lessons
 
 ## 🚀 Quick Start
 

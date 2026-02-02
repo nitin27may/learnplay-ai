@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import OpenAI from 'openai';
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,25 +8,48 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Text is required' }, { status: 400 });
     }
 
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = process.env.ELEVENLABS_API_KEY;
+    const voiceId = process.env.ELEVENLABS_VOICE_ID || 'JBFqnCBsd6RMkjVDRZzb';
     
     if (!apiKey) {
       return NextResponse.json(
-        { error: 'OpenAI API key not configured' },
+        { error: 'Eleven Labs API key not configured' },
         { status: 500 }
       );
     }
 
-    const openai = new OpenAI({ apiKey });
+    // Call Eleven Labs Text-to-Speech API
+    const response = await fetch(
+      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
+      {
+        method: 'POST',
+        headers: {
+          'Accept': 'audio/mpeg',
+          'Content-Type': 'application/json',
+          'xi-api-key': apiKey,
+        },
+        body: JSON.stringify({
+          text,
+          model_id: 'eleven_multilingual_v2',
+          voice_settings: {
+            stability: 0.5,
+            similarity_boost: 0.75,
+          }
+        }),
+      }
+    );
 
-    const mp3 = await openai.audio.speech.create({
-      model: 'tts-1',
-      voice: 'alloy',
-      input: text,
-      speed: 1.0,
-    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Eleven Labs API error:', response.status, errorText);
+      return NextResponse.json(
+        { error: 'Failed to generate speech with Eleven Labs' },
+        { status: response.status }
+      );
+    }
 
-    const buffer = Buffer.from(await mp3.arrayBuffer());
+    const audioBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(audioBuffer);
 
     return new NextResponse(buffer, {
       headers: {

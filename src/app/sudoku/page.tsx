@@ -7,7 +7,7 @@ import { AgentState } from '@/lib/types';
 import { useState, useEffect, useRef } from 'react';
 import { GameMode } from '@/lib/sudoku/types';
 import { useVoiceMode } from '@/lib/hooks/useVoiceMode';
-import { VoiceControls } from '@/components/VoiceControls';
+import { TeachingProgress } from '@/components/TeachingProgress';
 import { CellAnnotation } from '@/lib/sudoku/annotations';
 
 export default function SudokuPage() {
@@ -17,6 +17,14 @@ export default function SudokuPage() {
   const [annotations, setAnnotations] = useState<CellAnnotation[]>([]);
   const [annotationMessage, setAnnotationMessage] = useState<string>('');
   const [currentGrid, setCurrentGrid] = useState<(number | null)[][]>([]);
+  
+  // Teaching state
+  const [isTeaching, setIsTeaching] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [gameIsPaused, setGameIsPaused] = useState(false);
+  const [currentStep, setCurrentStep] = useState('');
+  const [totalSteps, setTotalSteps] = useState(0);
+  const [currentStepNumber, setCurrentStepNumber] = useState(0);
 
   // Connect to the Sudoku teaching agent
   const { state, setState } = useCoAgent({
@@ -41,6 +49,74 @@ export default function SudokuPage() {
     }
   }, [currentGrid]);
 
+  // Frontend tool for managing teaching state
+  useFrontendTool({
+    name: 'startTeaching',
+    description: 'Start a structured teaching session with multiple steps',
+    parameters: [
+      {
+        name: 'totalSteps',
+        description: 'Total number of steps in this teaching session',
+        type: 'number',
+        required: true,
+      },
+      {
+        name: 'topic',
+        description: 'The topic being taught (e.g., "Sudoku Basics", "Step-by-step Solution")',
+        type: 'string',
+        required: true,
+      },
+    ],
+    handler({ totalSteps, topic }) {
+      console.log('📚 Starting teaching session:', topic);
+      setIsTeaching(true);
+      setIsPaused(false);
+      setTotalSteps(totalSteps);
+      setCurrentStepNumber(0);
+      setCurrentStep(`Starting: ${topic}`);
+      return `Teaching session started: ${topic} with ${totalSteps} steps`;
+    },
+  });
+
+  useFrontendTool({
+    name: 'updateTeachingStep',
+    description: 'Update the current teaching step',
+    parameters: [
+      {
+        name: 'stepNumber',
+        description: 'Current step number',
+        type: 'number',
+        required: true,
+      },
+      {
+        name: 'stepDescription',
+        description: 'Description of the current step',
+        type: 'string',
+        required: true,
+      },
+    ],
+    handler({ stepNumber, stepDescription }) {
+      setCurrentStepNumber(stepNumber);
+      setCurrentStep(stepDescription);
+      return `Updated to step ${stepNumber}: ${stepDescription}`;
+    },
+  });
+
+  useFrontendTool({
+    name: 'endTeaching',
+    description: 'End the current teaching session',
+    parameters: [],
+    handler() {
+      console.log('✅ Ending teaching session');
+      setIsTeaching(false);
+      setIsPaused(false);
+      setCurrentStep('');
+      setAnnotations([]);
+      setAnnotationMessage('');
+      return 'Teaching session ended';
+    },
+  });
+
   // Frontend tool for updating game mode
   useFrontendTool({
     name: 'setTeachingMode',
@@ -59,6 +135,7 @@ export default function SudokuPage() {
         ...state,
         teaching_mode: mode,
       });
+      return `Teaching mode set to ${mode}`;
     },
   });
 
@@ -106,14 +183,14 @@ export default function SudokuPage() {
         ...state,
         sudoku_grid: currentGrid,
       });
-      return { grid: currentGrid };
+      return JSON.stringify({ grid: currentGrid });
     },
   });
 
   // Frontend tool for AI to highlight cells
   useFrontendTool({
     name: 'highlightCells',
-    description: 'Highlight cells on the board with persistent highlighting. Highlights remain visible until user places a number or clears them. Use for teaching suggestions.',
+    description: 'Highlight cells on the board with persistent highlighting and speak the message using Eleven Labs TTS. Highlights remain visible until user places a number or clears them. Use for teaching suggestions.',
 
     parameters: [
       {
@@ -124,7 +201,7 @@ export default function SudokuPage() {
       },
       {
         name: 'message',
-        description: 'Explanation message to show with the highlights AND speak aloud',
+        description: 'Explanation message to show with the highlights AND speak aloud using Eleven Labs',
         type: 'string',
         required: true,
       },
@@ -158,18 +235,17 @@ export default function SudokuPage() {
       setAnnotations(cellsArray);
       setAnnotationMessage(message || '');
       
-      // Speak the explanation simultaneously
+      // Speak the message using Eleven Labs TTS (fire and forget)
       if (message) {
-        console.log('🔊 Speaking explanation:', message);
+        console.log('🔊 Speaking explanation with Eleven Labs:', message);
+        // Don't await - let it run in background
         voice.speak(message).catch((err) => {
           console.warn('⚠️ TTS failed, continuing without voice:', err);
         });
       }
       
-      // Keep highlights persistent - only clear when user makes a move or explicitly clears
-      // No auto-clear timeout
-      
-      return `Highlighted ${cellsArray.length} cells: ${message}`;
+      // Return immediately - don't wait for voice
+      return `Highlighted ${cellsArray.length} cells with voice: ${message}`;
     },
   });
 
@@ -186,100 +262,115 @@ export default function SudokuPage() {
     },
   });
 
+  // Frontend tool for playing audio from agent
+  useFrontendTool({
+    name: 'playAgentAudio',
+    description: 'Play audio generated by the agent (base64 encoded MP3)',
+    parameters: [
+      {
+        name: 'audio',
+        description: 'Base64 encoded audio data',
+        type: 'string',
+        required: true,
+      },
+      {
+        name: 'message',
+        description: 'The text message being spoken',
+        type: 'string',
+        required: false,
+      },
+    ],
+    handler({ audio, message }) {
+      console.log('🔊 Playing agent-generated audio:', message);
+      
+      try {
+        // Decode base64 audio
+        const binaryString = atob(audio);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        
+        // Create blob and play
+        const blob = new Blob([bytes], { type: 'audio/mpeg' });
+        const audioUrl = URL.createObjectURL(blob);
+        const audioElement = new Audio(audioUrl);
+        
+        audioElement.onended = () => {
+          URL.revokeObjectURL(audioUrl);
+        };
+        
+        audioElement.play();
+        
+        return 'Audio playback started';
+      } catch (error) {
+        console.error('Failed to play audio:', error);
+        return 'Audio playback failed';
+      }
+    },
+  });
+
   // Voice transcript is displayed - user can copy/paste or it can be shown in the UI
   // For now, the transcript is just displayed and users can type it into the chat
   // CopilotKit doesn't expose a direct sendMessage API in the current version
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <TeachingProgress
+        isTeaching={isTeaching}
+        isPaused={isPaused}
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+        currentStepNumber={currentStepNumber}
+        onPause={() => setIsPaused(true)}
+        onResume={() => setIsPaused(false)}
+        onStop={() => {
+          setIsTeaching(false);
+          setIsPaused(false);
+          setAnnotations([]);
+          setAnnotationMessage('');
+        }}
+        onNext={() => {
+          setIsPaused(false);
+          // Trigger agent continuation by updating state
+          setState({
+            ...state,
+            next_step_requested: true,
+            timestamp: Date.now(),
+          });
+        }}
+      />
       <CopilotSidebar
         clickOutsideToClose={false}
         defaultOpen={false}
         labels={{
           title: 'Sudoku AI Tutor',
-          initial: "Hello! I'm your multi-modal Sudoku tutor. I'll show you strategies by highlighting cells on the board while explaining them with voice. Try asking me to 'show you' something!",
+          initial: "Hello! I'm your interactive Sudoku tutor with voice and visual guidance. Ask me to explain the basics, give hints, or solve step-by-step!",
         }}
         suggestions={[
           {
-            title: 'Explain Basics',
-            message: 'Explain the basic rules of Sudoku by highlighting the grid, rows, and columns',
+            title: 'Learn Sudoku Basics',
+            message: 'Explain the basic rules of Sudoku using this board as an example',
           },
           {
-            title: 'Teach Me Step-by-Step',
-            message: 'Find an empty cell and teach me step by step what number goes there',
+            title: 'Get a Hint',
+            message: 'Give me a hint for the next move',
           },
           {
-            title: 'Continue to Next Step',
-            message: 'Show me the next step or another cell I should fill',
+            title: 'Solve Step-by-Step',
+            message: 'Teach me how to solve this puzzle step by step',
           },
           {
-            title: 'Explain Why',
-            message: 'Explain the reasoning behind this suggestion in more detail',
+            title: 'Continue',
+            message: 'Continue to the next step',
+          },
+          {
+            title: 'Explain This Strategy',
+            message: 'Explain the strategy you just used in more detail',
           },
         ]}
       >
         <div className="p-8">
-          {/* Mode Selector */}
-          <div className="max-w-7xl mx-auto mb-6">
-            <div className="bg-white p-4 rounded-lg shadow-md flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-bold text-gray-800">Teaching Mode</h2>
-                <p className="text-sm text-gray-600">
-                  {gameMode === 'play' && 'Play independently, ask for help anytime'}
-                  {gameMode === 'teach' && 'AI will guide you through each move'}
-                  {gameMode === 'practice' && 'Practice specific strategies'}
-                </p>
-              </div>
-              <div className="flex gap-2">
-                {(['play', 'teach', 'practice'] as GameMode[]).map((mode) => (
-                  <button
-                    key={mode}
-                    className={`
-                      px-4 py-2 rounded-lg font-semibold capitalize transition-colors
-                      ${gameMode === mode
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}
-                    `}
-                    onClick={() => {
-                      setGameMode(mode);
-                      setState({ ...state, teaching_mode: mode });
-                    }}
-                  >
-                    {mode}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Voice Mode Controls */}
-          <div className="max-w-7xl mx-auto mb-6">
-            <div className="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900 mb-1">Voice Interaction</h3>
-                  <p className="text-sm text-gray-600">
-                    Speak your questions and receive voice responses from your AI tutor
-                  </p>
-                </div>
-                <VoiceControls
-                  isListening={voice.isListening}
-                  isSpeaking={voice.isSpeaking}
-                  isSupported={voice.isSupported}
-                  onStartListening={voice.startListening}
-                  onStopListening={voice.stopListening}
-                  onStopSpeaking={voice.stopSpeaking}
-                />
-              </div>
-              {voice.transcript && (
-                <div className="mt-3 p-3 bg-gray-50 rounded border border-gray-200">
-                  <p className="text-xs font-medium text-gray-600 mb-1">Transcript:</p>
-                  <p className="text-sm text-gray-800">{voice.transcript}</p>
-                </div>
-              )}
-            </div>
-          </div>
-
           <SudokuGame 
             initialDifficulty="medium" 
             annotations={annotations}

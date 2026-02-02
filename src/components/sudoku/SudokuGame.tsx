@@ -17,6 +17,8 @@ interface SudokuGameProps {
 
 export function SudokuGame({ initialDifficulty = 'medium', annotations = [], annotationMessage, onGridChange }: SudokuGameProps) {
   const [mounted, setMounted] = useState(false);
+  const [gameStarted, setGameStarted] = useState(false);
+  const [gameIsPaused, setGameIsPaused] = useState(false);
   
   useEffect(() => {
     setMounted(true);
@@ -84,66 +86,98 @@ export function SudokuGame({ initialDifficulty = 'medium', annotations = [], ann
           </p>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-6 items-start justify-center">
-          {/* Game Board */}
-          <div className="flex justify-center">
-            <SudokuBoard
-              gameState={gameState}
-              onCellSelect={selectCell}
-              annotations={annotations}
-              annotationMessage={annotationMessage}
-            />
+        {!gameStarted ? (
+          <div className="flex flex-col items-center justify-center gap-6 py-12">
+            <div className="text-center">
+              <h2 className="text-2xl font-semibold text-gray-700 mb-2">Ready to Play?</h2>
+              <p className="text-gray-600 mb-6">Choose a difficulty level to begin</p>
+            </div>
+            <div className="grid grid-cols-2 gap-4 max-w-md w-full">
+              {(['easy', 'medium', 'hard', 'expert'] as Difficulty[]).map((diff) => (
+                <button
+                  key={diff}
+                  className="py-4 px-6 rounded-lg font-semibold text-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors capitalize shadow-lg"
+                  onClick={() => {
+                    setGameStarted(true);
+                    newGame(diff);
+                  }}
+                >
+                  {diff}
+                </button>
+              ))}
+            </div>
           </div>
+        ) : (
+          <>
+            <div className="flex flex-col lg:flex-row gap-6 items-start justify-center">
+              {/* Game Board */}
+              <div className="flex justify-center">
+                <SudokuBoard
+                  gameState={gameState}
+                  onCellSelect={gameIsPaused ? () => {} : selectCell}
+                  annotations={annotations}
+                  annotationMessage={annotationMessage}
+                  disabled={gameIsPaused}
+                />
+              </div>
 
-          {/* Number Pad */}
-          <div className="flex justify-center lg:justify-start">
-            <NumberPad
-              onNumberSelect={placeNumber}
-              disabled={isDisabled}
-            />
-          </div>
+              {/* Number Pad */}
+              <div className="flex justify-center lg:justify-start">
+                <NumberPad
+                  onNumberSelect={placeNumber}
+                  disabled={isDisabled || gameIsPaused}
+                />
+              </div>
 
-          {/* Controls */}
-          <div className="flex justify-center lg:justify-start">
-            <GameControls
-              gameState={gameState}
-              onNewGame={newGame}
-              onReset={resetGame}
-              onUndo={undo}
-              onRedo={redo}
-              onHint={useHint}
-              canUndo={canUndo}
-              canRedo={canRedo}
-            />
-          </div>
-        </div>
+              {/* Controls */}
+              <div className="flex justify-center lg:justify-start">
+                <GameControls
+                  gameState={gameState}
+                  onNewGame={newGame}
+                  onReset={resetGame}
+                  onUndo={undo}
+                  onRedo={redo}
+                  onHint={useHint}
+                  canUndo={canUndo}
+                  canRedo={canRedo}
+                  isPaused={gameIsPaused}
+                  onPauseResume={() => setGameIsPaused(!gameIsPaused)}
+                  onStop={() => {
+                    setGameStarted(false);
+                    setGameIsPaused(false);
+                  }}
+                />
+              </div>
+            </div>
 
-        {/* Instructions */}
-        <div className="mt-8 max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-lg">
-          <h2 className="text-xl font-bold text-gray-800 mb-3">How to Play</h2>
-          <ul className="space-y-2 text-gray-700">
-            <li className="flex items-start">
-              <span className="text-blue-500 mr-2">▸</span>
-              <span>Click a cell to select it, then use the number pad or keyboard (1-9) to place numbers</span>
-            </li>
-            <li className="flex items-start">
-              <span className="text-blue-500 mr-2">▸</span>
-              <span>Use arrow keys to navigate between cells</span>
-            </li>
-            <li className="flex items-start">
-              <span className="text-blue-500 mr-2">▸</span>
-              <span>Press Delete or Backspace to clear a cell</span>
-            </li>
-            <li className="flex items-start">
-              <span className="text-blue-500 mr-2">▸</span>
-              <span>Each row, column, and 3x3 box must contain digits 1-9 without repetition</span>
-            </li>
-            <li className="flex items-start">
-              <span className="text-blue-500 mr-2">▸</span>
-              <span>Click Hint if you need help, but use sparingly for the best score!</span>
-            </li>
-          </ul>
-        </div>
+            {/* Instructions */}
+            <div className="mt-8 max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-lg">
+              <h2 className="text-xl font-bold text-gray-800 mb-3">How to Play</h2>
+              <ul className="space-y-2 text-gray-700">
+                <li className="flex items-start">
+                  <span className="text-blue-500 mr-2">▸</span>
+                  <span>Click a cell to select it, then use the number pad or keyboard (1-9) to place numbers</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-blue-500 mr-2">▸</span>
+                  <span>Use arrow keys to navigate between cells</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-blue-500 mr-2">▸</span>
+                  <span>Press Delete or Backspace to clear a cell</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-blue-500 mr-2">▸</span>
+                  <span>Each row, column, and 3x3 box must contain digits 1-9 without repetition</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-blue-500 mr-2">▸</span>
+                  <span>Click Hint if you need help, but use sparingly for the best score!</span>
+                </li>
+              </ul>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

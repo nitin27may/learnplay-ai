@@ -11,19 +11,22 @@ export function useSudokuGame(initialDifficulty: Difficulty = 'medium') {
 
   // Timer
   useEffect(() => {
-    if (!gameState.isComplete) {
+    if (!gameState.isComplete && !gameState.isPaused) {
       timerRef.current = setInterval(() => {
         setGameState(prev => ({
           ...prev,
           elapsedTime: Date.now() - prev.startTime
         }));
       }, 1000);
+    } else if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
     }
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [gameState.isComplete]);
+  }, [gameState.isComplete, gameState.isPaused]);
 
   const selectCell = useCallback((row: number, col: number) => {
     setGameState(prev => ({
