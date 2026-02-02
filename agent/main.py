@@ -16,6 +16,7 @@ from sudoku_tools import (
     explain_strategy,
     explain_sudoku_basics
 )
+from chess_tools import analyzer
 from voice_tools import speak_message
 
 @tool
@@ -24,6 +25,48 @@ def get_weather(location: str):
     Get the weather for a given location.
     """
     return f"The weather for {location} is 70 degrees."
+
+@tool
+def analyze_chess_position(fen: str) -> Dict[str, Any]:
+    """
+    Analyze a chess position from FEN notation.
+    Returns position evaluation, material count, game status, and castling rights.
+    """
+    return analyzer.analyze_position(fen)
+
+@tool
+def suggest_chess_move(fen: str, skill_level: str = "intermediate") -> str:
+    """
+    Suggest a chess move for the current position.
+    skill_level can be: beginner, intermediate, advanced, expert
+    Returns move in UCI format (e.g., 'e2e4')
+    """
+    move = analyzer.suggest_move(fen, skill_level)
+    return move if move else "No legal moves available"
+
+@tool
+def validate_chess_move(fen: str, move_uci: str) -> Dict[str, Any]:
+    """
+    Validate if a chess move is legal.
+    Returns whether the move is legal and any error message.
+    """
+    return analyzer.validate_move(fen, move_uci)
+
+@tool
+def explain_chess_position(fen: str) -> str:
+    """
+    Generate a natural language explanation of the current chess position.
+    Describes turn, check status, material balance, and strategic considerations.
+    """
+    return analyzer.explain_position(fen)
+
+@tool
+def get_attacked_squares(fen: str, color: str) -> List[str]:
+    """
+    Get all squares attacked by a specific color (white or black).
+    Returns list of square names (e.g., ['e4', 'd5', 'f3'])
+    """
+    return analyzer.get_attacked_squares(fen, color)
 
 class AgentState(CopilotKitState):
     proverbs: List[str]
@@ -37,11 +80,14 @@ class AgentState(CopilotKitState):
     teaching_current_step: int = 0
     teaching_total_steps: int = 0
     next_step_requested: bool = False
+    # Chess state
+    chess_fen: Optional[str] = None
+    chess_game_mode: str = "practice"  # practice, vs_ai, learn
 
 # Get the configured LLM provider
 llm = get_llm_provider()
 
-# Create agent with Sudoku teaching tools
+# Create agent with Sudoku and Chess teaching tools
 agent = create_agent(
     model=llm,
     tools=[
@@ -51,6 +97,11 @@ agent = create_agent(
         suggest_next_move,
         explain_strategy,
         explain_sudoku_basics,
+        analyze_chess_position,
+        suggest_chess_move,
+        validate_chess_move,
+        explain_chess_position,
+        get_attacked_squares,
         speak_message
     ],
     middleware=[CopilotKitMiddleware()],

@@ -19,6 +19,7 @@ dependencies = [
     "langgraph-api>=0.6.0",
     "requests>=2.31.0",
     "ruff>=0.8.0",
+    "chess>=1.10.0",
 ]
 
 [tool.ruff]
