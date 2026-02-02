@@ -1,12 +1,12 @@
-# Game Learning Platform 🎮🤖
+# LearnPlay.ai
 
 **An intelligent educational platform that teaches classic board games through AI-powered interactive tutoring.**
 
-This platform combines the timeless appeal of strategy games (Sudoku and Chess) with cutting-edge AI technology to create an engaging, personalized learning experience. Each game features an AI tutor that explains rules, demonstrates strategies, and teaches step-by-step solutions with interactive visual guidance and voice narration.
+LearnPlay.ai combines the timeless appeal of strategy games (Sudoku and Chess) with cutting-edge AI technology to create an engaging, personalized learning experience. Each game features an AI tutor that explains rules, demonstrates strategies, and teaches step-by-step solutions with interactive visual guidance and voice narration.
 
 ![Next.js](https://img.shields.io/badge/Next.js-16.1-black) ![CopilotKit](https://img.shields.io/badge/CopilotKit-1.51-blue) ![LangGraph](https://img.shields.io/badge/LangGraph-1.0-green) ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
 
-## 🎯 Project Vision
+## Project Vision
 
 Transform how people learn strategic thinking through games by providing:
 - **Interactive AI Tutors**: Not just hints, but comprehensive teaching with explanations
@@ -15,7 +15,7 @@ Transform how people learn strategic thinking through games by providing:
 - **Adaptive Difficulty**: AI adjusts teaching based on player progress
 - **Step-by-Step Guidance**: Break down complex strategies into digestible steps
 
-## 📖 Documentation
+## Documentation
 
 - [Project Overview](docs/PROJECT_OVERVIEW.md) - Vision, goals, and technical approach
 - [Sudoku Game Guide](docs/SUDOKU_GUIDE.md) - Complete Sudoku implementation details
@@ -24,9 +24,9 @@ Transform how people learn strategic thinking through games by providing:
 - [Architecture](docs/ARCHITECTURE.md) - Technical architecture and design decisions
 - [Development Guide](docs/DEVELOPMENT.md) - Setup, development, and deployment
 
-## ✨ Current Features
+## Current Features
 
-### 🎲 Sudoku Game (Fully Implemented)
+### Sudoku Game (Fully Implemented)
 - **Complete Game Mechanics**
   - Puzzle generation with 4 difficulty levels (Easy, Medium, Hard, Expert)
   - Interactive board with cell selection and number placement
@@ -52,7 +52,7 @@ Transform how people learn strategic thinking through games by providing:
   - New game with different difficulties
   - Reset current puzzle
 
-### 🎯 Chess Game (Planned)
+### Chess Game (Planned)
 - Chess board with piece movement
 - Move validation and game rules
 - AI opponent with adjustable difficulty
@@ -61,7 +61,7 @@ Transform how people learn strategic thinking through games by providing:
 - Position analysis and best move suggestions
 - Step-by-step opening theory lessons
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Node.js 20+
@@ -99,7 +99,7 @@ This starts both:
 4. **Open the app:**
 Navigate to http://localhost:3000 and start playing!
 
-## 🎮 How to Play Sudoku
+## How to Play Sudoku
 
 1. Click any cell to select it
 2. Use number pad or keyboard (1-9) to place numbers
@@ -108,7 +108,7 @@ Navigate to http://localhost:3000 and start playing!
 5. Click "Hint" if you need help
 6. Chat with the AI tutor for strategy explanations!
 
-## 🤖 LLM Configuration
+## LLM Configuration
 
 ### OpenAI (Default)
 ```env
@@ -139,7 +139,45 @@ OLLAMA_BASE_URL=http://localhost:11434
 OLLAMA_MODEL=llama3.1:8b
 ```
 
-## 🏗️ Architecture
+## Voice Configuration (ElevenLabs)
+
+LearnPlay.ai uses ElevenLabs for natural voice explanations during teaching sessions.
+
+### Setup
+
+1. **Get an API key** from [ElevenLabs](https://elevenlabs.io/) (free tier available)
+2. **Add to `agent/.env`**:
+
+```env
+ELEVENLABS_API_KEY=your-elevenlabs-api-key
+ELEVENLABS_VOICE_ID=JBFqnCBsd6RMkjVDRZzb  # Optional, defaults to "George"
+```
+
+### Voice Settings
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| Voice ID | `JBFqnCBsd6RMkjVDRZzb` | George voice (free tier) |
+| Model | `eleven_multilingual_v2` | Multilingual support |
+| Stability | `0.5` | Voice consistency |
+| Similarity Boost | `0.75` | Voice clarity |
+| Output Format | MP3 44100Hz | High quality audio |
+
+### Available Voices
+
+You can use any ElevenLabs voice ID. Popular free-tier options:
+- `JBFqnCBsd6RMkjVDRZzb` - George (default, male)
+- `21m00Tcm4TlvDq8ikWAM` - Rachel (female)
+- `AZnzlk1XvdvUeBnXmlld` - Domi (female)
+
+### Fallback Behavior
+
+If ElevenLabs is not configured or unavailable:
+- The app gracefully falls back to browser's built-in Text-to-Speech
+- Teaching sessions continue without interruption
+- A message indicates TTS is unavailable
+
+## Architecture
 
 ### Frontend (Next.js + React)
 ```
@@ -172,7 +210,7 @@ agent/
 └── pyproject.toml        # Python dependencies
 ```
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 - **Frontend**: React 19, Next.js 16, TypeScript 5
 - **UI/Animations**: Tailwind CSS 4, Framer Motion
@@ -180,7 +218,7 @@ agent/
 - **Agent Framework**: LangGraph 1.0, LangChain 1.2
 - **LLM Providers**: OpenAI, Azure OpenAI, Anthropic, Ollama
 
-## 📚 AI Teaching Strategies
+## AI Teaching Strategies
 
 The AI tutor teaches these Sudoku techniques:
 
@@ -197,7 +235,7 @@ The AI tutor teaches these Sudoku techniques:
 - **Swordfish**: Complex pattern recognition
 - **XY-Wing**: Chain-based technique
 
-## 🧪 Development
+## Development
 
 ### Run in debug mode:
 ```bash
@@ -215,7 +253,7 @@ npm start
 npm run lint
 ```
 
-## 📝 Scripts
+## Scripts
 
 - `npm run dev` - Start both frontend and agent
 - `npm run dev:ui` - Start frontend only
@@ -223,41 +261,41 @@ npm run lint
 - `npm run build` - Build for production
 - `npm run lint` - Lint code
 
-## 🎯 Roadmap
+## Roadmap
 
-### Phase 1: Sudoku MVP ✅
+### Phase 1: Sudoku MVP (Complete)
 - [x] Basic Sudoku game
 - [x] LangGraph agent
 - [x] CopilotKit integration
 - [x] Multi-LLM support
 
-### Phase 2: Enhanced Teaching 🚧
+### Phase 2: Enhanced Teaching (In Progress)
 - [x] Teaching modes
 - [x] Strategy analysis
 - [ ] Generative UI for explanations
 - [ ] Progress tracking
 
-### Phase 3: Chess Implementation 📅
+### Phase 3: Chess Implementation (Planned)
 - [ ] Chess game engine
 - [ ] Move validation
 - [ ] AI opponent
 - [ ] Chess teaching agent
 
-### Phase 4: Advanced Features 📅
-- [ ] Voice mode
+### Phase 4: Advanced Features (Planned)
+- [x] Voice mode (ElevenLabs TTS)
 - [ ] User accounts
 - [ ] Leaderboards
 - [ ] Mobile app
 
-## 🤝 Contributing
+## Contributing
 
 This is a learning project! Contributions welcome.
 
-## 📄 License
+## License
 
 MIT
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - CopilotKit for the amazing AI framework
 - LangChain/LangGraph for agent orchestration
@@ -265,4 +303,4 @@ MIT
 
 ---
 
-Built with ❤️ using CopilotKit and LangGraph
+Built with CopilotKit and LangGraph

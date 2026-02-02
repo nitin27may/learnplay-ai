@@ -1,4 +1,4 @@
-# Game Learning - Setup & Usage Guide
+# LearnPlay.ai - Setup & Usage Guide
 
 ## Quick Setup
 
@@ -18,7 +18,17 @@ OPENAI_API_KEY=your-actual-key-here
 OPENAI_MODEL=gpt-4o-mini
 ```
 
-### 3. Start Development
+### 3. Configure Voice (Optional)
+
+For natural voice explanations during teaching, add ElevenLabs credentials:
+```env
+ELEVENLABS_API_KEY=your-elevenlabs-api-key
+ELEVENLABS_VOICE_ID=JBFqnCBsd6RMkjVDRZzb  # Optional, defaults to "George"
+```
+
+> **Note**: Get a free API key at [elevenlabs.io](https://elevenlabs.io). If not configured, the app falls back to browser TTS.
+
+### 4. Start Development
 ```bash
 npm run dev
 ```
@@ -209,7 +219,7 @@ npm run dev:debug
 
 ## What's Implemented
 
-✅ **Complete Features:**
+**Complete Features:**
 - Full Sudoku game with 4 difficulty levels
 - Multi-LLM support (OpenAI, Azure, Anthropic, Ollama)
 - Teaching modes (Play, Teach, Practice)
@@ -219,13 +229,13 @@ npm run dev:debug
 - Undo/Redo
 - Hints
 - Timer and stats
+- Voice mode (ElevenLabs TTS)
 
-🚧 **In Progress:**
-- Voice mode
+**In Progress:**
 - More advanced Sudoku techniques
 - Progress tracking
 
-📅 **Planned:**
+**Planned:**
 - Chess game
 - User accounts
 - Leaderboards
@@ -246,4 +256,4 @@ npm run dev:debug
 - Open the browser console for debugging
 - Check agent logs in the terminal
 
-Happy coding! 🎮
+Happy coding!

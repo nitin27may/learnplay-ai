@@ -186,7 +186,7 @@ An educational gaming platform featuring:
 
 ## Future Roadmap
 
-### Phase 1: Sudoku MVP ✅ COMPLETE
+### Phase 1: Sudoku MVP - COMPLETE
 - [x] Basic Sudoku game implementation
 - [x] LangGraph agent with teaching tools
 - [x] CopilotKit integration
@@ -194,14 +194,14 @@ An educational gaming platform featuring:
 - [x] Voice explanations with Eleven Labs
 - [x] Teaching progress UI with controls
 
-### Phase 2: Enhanced Sudoku Teaching 🚧 IN PROGRESS
+### Phase 2: Enhanced Sudoku Teaching - IN PROGRESS
 - [ ] Strategy difficulty progression
 - [ ] Practice mode with targeted exercises
 - [ ] User progress tracking and analytics
 - [ ] Generative UI for complex explanations
 - [ ] Mobile responsive design optimization
 
-### Phase 3: Chess Implementation 📅 PLANNED
+### Phase 3: Chess Implementation - PLANNED
 - [ ] Chess game engine and board
 - [ ] Move validation and game rules
 - [ ] AI opponent with Stockfish integration
@@ -209,7 +209,7 @@ An educational gaming platform featuring:
 - [ ] Opening book and position database
 - [ ] Interactive lessons for common patterns
 
-### Phase 4: Platform Features 📅 FUTURE
+### Phase 4: Platform Features - FUTURE
 - [ ] User accounts and authentication
 - [ ] Progress tracking across sessions
 - [ ] Leaderboards and achievements
@@ -256,4 +256,4 @@ MIT License - See LICENSE file for details.
 
 ---
 
-**Built with ❤️ using CopilotKit, LangGraph, and modern web technologies.**
+**Built with CopilotKit, LangGraph, and modern web technologies.**

@@ -4,7 +4,7 @@
 
 Chess Academy will be the second game in the Game Learning Platform, featuring a complete chess game with an intelligent AI tutor that teaches chess concepts, openings, tactics, and strategy through interactive visual guidance.
 
-> **Status**: 📅 PLANNED - Implementation to begin after Sudoku polish phase
+> **Status**: PLANNED - Implementation to begin after Sudoku polish phase
 
 ## Vision
 
