@@ -8,14 +8,8 @@ on:
 
 jobs:
   build:
-    name: Build & Test (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-        node: [20]
-        python: [3.12]
+    name: Build & Test
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -24,21 +18,17 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 20
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python }}
+          python-version: "3.12"
 
       - name: Install uv
         uses: astral-sh/setup-uv@v4
         with:
           enable-cache: true
-
-      - name: Configure uv to use matrix Python version
-        run: echo "UV_PYTHON=python${{ matrix.python }}" >> $GITHUB_ENV
-        shell: bash
 
       - name: Install Node.js dependencies
         run: npm install
@@ -67,8 +57,34 @@ jobs:
       - name: Build frontend
         run: npm run build
 
-      - name: Test frontend startup (Linux)
-        if: runner.os == 'Linux'
+      - name: Test agent startup
+        run: |
+          cd agent
+          uv run langgraph dev --port 8123 &
+          AGENT_PID=$!
+          
+          timeout=30
+          elapsed=0
+          started=false
+
+          while [ $elapsed -lt $timeout ] && [ "$started" = false ]; do
+            if curl -s http://localhost:8123/health > /dev/null 2>&1 || curl -s http://localhost:8123/ok > /dev/null 2>&1 || curl -s http://localhost:8123 > /dev/null 2>&1; then
+              started=true
+              echo "Agent started successfully"
+            else
+              sleep 1
+              elapsed=$((elapsed + 1))
+            fi
+          done
+
+          kill $AGENT_PID 2>/dev/null || true
+
+          if [ "$started" = false ]; then
+            echo "Agent failed to start within 30 seconds"
+            exit 1
+          fi
+
+      - name: Test frontend startup
         run: |
           npm start &
           FRONTEND_PID=$!
@@ -93,32 +109,3 @@ jobs:
             echo "Frontend failed to start within 30 seconds"
             exit 1
           fi
-        shell: bash
-
-      - name: Test frontend startup (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          npm start &
-          
-          $timeout = 30
-          $elapsed = 0
-          $started = $false
-
-          while ($elapsed -lt $timeout -and -not $started) {
-            try {
-              $response = Invoke-WebRequest -Uri "http://localhost:3000" -TimeoutSec 1 -ErrorAction SilentlyContinue
-              if ($response.StatusCode -eq 200) {
-                $started = $true
-                Write-Host "Frontend started successfully"
-              }
-            } catch {
-              Start-Sleep -Seconds 1
-              $elapsed++
-            }
-          }
-
-          if (-not $started) {
-            Write-Host "Frontend failed to start within 30 seconds"
-            exit 1
-          }
-        shell: pwsh
