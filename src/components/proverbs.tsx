@@ -2,11 +2,11 @@ import JsonView from "react18-json-view";
 import 'react18-json-view/src/style.css'
 
 export interface ProverbsCardProps {
-  state: any;
-  setState: (state: any) => void;
+  state: Record<string, unknown>;
+  setState?: (state: Record<string, unknown>) => void;
 }
 
-export function ProverbsCard({ state, setState }: ProverbsCardProps) {
+export function ProverbsCard({ state }: ProverbsCardProps) {
   return (
     <div className="bg-white/20 backdrop-blur-md p-8 rounded-2xl shadow-xl max-w-2xl w-full">
       <h1 className="text-4xl font-bold text-white mb-2 text-center">Proverbs</h1>

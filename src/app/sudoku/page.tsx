@@ -2,26 +2,24 @@
 
 import { SudokuGame } from '@/components/sudoku/SudokuGame';
 import { CopilotSidebar } from '@copilotkit/react-ui';
-import { useCoAgent, useFrontendTool, useCopilotChatSuggestions } from '@copilotkit/react-core';
-import { AgentState } from '@/lib/types';
-import { useState, useEffect, useRef } from 'react';
-import { GameMode } from '@/lib/sudoku/types';
+import { useCoAgent, useFrontendTool } from '@copilotkit/react-core';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useVoiceMode } from '@/lib/hooks/useVoiceMode';
 import { TeachingProgress } from '@/components/TeachingProgress';
 import { CellAnnotation } from '@/lib/sudoku/annotations';
+import { GameMode } from '@/lib/sudoku/types';
 
 export default function SudokuPage() {
-  const [gameMode, setGameMode] = useState<GameMode>('play');
   const voice = useVoiceMode();
-  const lastMessageRef = useRef<string>('');
+  const [gameMode, setGameMode] = useState<GameMode>('play');
   const [annotations, setAnnotations] = useState<CellAnnotation[]>([]);
   const [annotationMessage, setAnnotationMessage] = useState<string>('');
   const [currentGrid, setCurrentGrid] = useState<(number | null)[][]>([]);
+  const prevGridRef = useRef<string>('');
   
   // Teaching state
   const [isTeaching, setIsTeaching] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [gameIsPaused, setGameIsPaused] = useState(false);
   const [currentStep, setCurrentStep] = useState('');
   const [totalSteps, setTotalSteps] = useState(0);
   const [currentStepNumber, setCurrentStepNumber] = useState(0);
@@ -34,20 +32,27 @@ export default function SudokuPage() {
   // Sync grid to agent state whenever it changes
   useEffect(() => {
     if (currentGrid.length > 0) {
-      console.log('📊 Syncing grid to agent:', currentGrid);
-      setState({
-        ...state,
-        sudoku_grid: currentGrid,
-      });
-      
-      // Clear highlights when user makes a move
-      if (annotations.length > 0) {
-        console.log('✅ User made a move, clearing highlights');
-        setAnnotations([]);
-        setAnnotationMessage('');
+      const gridString = JSON.stringify(currentGrid);
+      if (gridString !== prevGridRef.current) {
+        console.log('Syncing grid to agent');
+        prevGridRef.current = gridString;
       }
     }
   }, [currentGrid]);
+
+  // Handle grid changes - update agent state  
+  const handleGridChange = useCallback((newGrid: (number | null)[][]) => {
+    setCurrentGrid(newGrid);
+    setState((prev: Record<string, unknown>) => ({
+      ...prev,
+      sudoku_grid: newGrid,
+    }));
+    // Clear annotations when user makes a move
+    if (annotations.length > 0) {
+      setAnnotations([]);
+      setAnnotationMessage('');
+    }
+  }, [setState, annotations.length]);
 
   // Frontend tool for managing teaching state
   useFrontendTool({
@@ -212,8 +217,8 @@ export default function SudokuPage() {
         required: false,
       },
     ],
-    handler({ cells, message, duration }) {
-      console.log('🎨 Highlighting cells:', cells, 'Message:', message);
+    handler({ cells, message, duration: _duration }) {
+      console.log('Highlighting cells:', cells, 'Message:', message);
       
       // Validate and handle cells parameter
       if (!cells) {
@@ -375,10 +380,7 @@ export default function SudokuPage() {
             initialDifficulty="medium" 
             annotations={annotations}
             annotationMessage={annotationMessage}
-            onGridChange={(grid) => {
-              console.log('🎮 Grid updated:', grid);
-              setCurrentGrid(grid);
-            }}
+            onGridChange={handleGridChange}
           />
         </div>
       </CopilotSidebar>

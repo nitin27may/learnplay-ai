@@ -12,7 +12,7 @@ interface SudokuCellProps {
   isError: boolean;
   isSameNumber: boolean;
   isRelated: boolean;
-  onClick: () => void;
+  onClick?: () => void;
 }
 
 export function SudokuCell({

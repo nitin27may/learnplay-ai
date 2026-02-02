@@ -113,7 +113,7 @@ export default function HomePage() {
               <div className="text-5xl mb-4">💡</div>
               <h4 className="font-bold text-gray-900 mb-3 text-xl">Strategy Explanations</h4>
               <p className="text-gray-700 text-base leading-relaxed">
-                Learn the 'why' behind every move with detailed breakdowns
+                Learn the &apos;why&apos; behind every move with detailed breakdowns
               </p>
             </div>
             <div className="bg-white/95 backdrop-blur p-8 rounded-2xl shadow-2xl border-2 border-white/20 hover:scale-105 transition-transform duration-300">

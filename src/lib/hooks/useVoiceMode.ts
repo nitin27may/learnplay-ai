@@ -9,39 +9,58 @@ interface VoiceState {
   error: string | null;
 }
 
+interface SpeechRecognitionEvent {
+  results: SpeechRecognitionResultList;
+}
+
+interface SpeechRecognitionErrorEvent {
+  error: string;
+}
+
+interface SpeechRecognitionResult {
+  0: SpeechRecognitionAlternative;
+  isFinal: boolean;
+}
+
+interface SpeechRecognitionAlternative {
+  transcript: string;
+  confidence: number;
+}
+
 export function useVoiceMode() {
   const [voiceState, setVoiceState] = useState<VoiceState>({
     isListening: false,
-    isSupported: false,
+    isSupported: typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window),
     transcript: '',
     error: null,
   });
   
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     // Check if speech recognition is supported
     if (typeof window !== 'undefined') {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const SpeechRecognitionClass = window.SpeechRecognition || window.webkitSpeechRecognition;
       
-      if (SpeechRecognition) {
-        const recognition = new SpeechRecognition();
+      if (SpeechRecognitionClass) {
+        const recognition = new SpeechRecognitionClass();
         recognition.continuous = false;
         recognition.interimResults = true;
         recognition.lang = 'en-US';
 
-        recognition.onresult = (event: any) => {
-          const transcript = Array.from(event.results)
-            .map((result: any) => result[0])
-            .map((result: any) => result.transcript)
+        recognition.onresult = (event: SpeechRecognitionEvent) => {
+          const results = Array.from(event.results);
+          const transcript = results
+            .map((result) => result[0])
+            .map((alternative) => alternative.transcript)
             .join('');
           
           setVoiceState(prev => ({ ...prev, transcript }));
         };
 
-        recognition.onerror = (event: any) => {
+        recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
           setVoiceState(prev => ({
             ...prev,
             isListening: false,
@@ -54,7 +73,6 @@ export function useVoiceMode() {
         };
 
         recognitionRef.current = recognition;
-        setVoiceState(prev => ({ ...prev, isSupported: true }));
       }
     }
   }, []);

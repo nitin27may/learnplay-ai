@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { GameState, Difficulty, SudokuMove, CellValue } from './types';
-import { generatePuzzle, isValidPlacement, isPuzzleComplete } from './generator';
+import { generatePuzzle, isPuzzleComplete } from './generator';
 import { getHint } from './solver';
 
 export function useSudokuGame(initialDifficulty: Difficulty = 'medium') {
@@ -44,7 +44,7 @@ export function useSudokuGame(initialDifficulty: Difficulty = 'medium') {
       }
 
       const newGrid = grid.map(row => [...row]);
-      const oldValue = newGrid[selectedCell.row][selectedCell.col];
+      const previousValue = newGrid[selectedCell.row][selectedCell.col];
       newGrid[selectedCell.row][selectedCell.col] = value;
 
       // Track move
@@ -52,6 +52,7 @@ export function useSudokuGame(initialDifficulty: Difficulty = 'medium') {
         row: selectedCell.row,
         col: selectedCell.col,
         value,
+        previousValue,
         timestamp: Date.now()
       };
 
@@ -194,6 +195,7 @@ function initializeGame(difficulty: Difficulty): GameState {
     startTime: Date.now(),
     elapsedTime: 0,
     isComplete: false,
+    isPaused: false,
     difficulty
   };
 }

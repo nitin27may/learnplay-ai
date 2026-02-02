@@ -20,6 +20,7 @@ export interface GameState {
   startTime: number;
   elapsedTime: number;
   isComplete: boolean;
+  isPaused: boolean;
   difficulty: Difficulty;
 }
 
@@ -31,6 +32,7 @@ export interface SudokuMove {
   row: number;
   col: number;
   value: CellValue;
+  previousValue?: CellValue;
   timestamp: number;
 }
 
