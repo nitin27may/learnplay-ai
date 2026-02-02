@@ -63,7 +63,7 @@ flowchart TB
 The AG-UI (Agent-User Interface) protocol is the communication layer that enables real-time, bidirectional interaction between the AI agent and the user interface.
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'actorBkg': '#4A90A4', 'actorTextColor': '#fff', 'actorBorder': '#2C5F6E', 'signalColor': '#333', 'loopTextColor': '#333', 'noteBkgColor': '#F5E6C8'}}}%%
+%%{init: {'theme': 'base', 'themeVariables': { 'actorBkg': '#4A90A4', 'actorTextColor': '#fff', 'actorBorder': '#2C5F6E', 'signalColor': '#4A90A4', 'signalTextColor': '#4A90A4', 'loopTextColor': '#7B68A6', 'labelTextColor': '#5A9A6E', 'noteBkgColor': '#F5E6C8', 'noteTextColor': '#333'}}}%%
 sequenceDiagram
     participant User
     participant React as React Frontend
