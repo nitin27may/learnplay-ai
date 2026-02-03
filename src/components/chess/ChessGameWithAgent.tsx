@@ -74,6 +74,8 @@ export function ChessGameWithAgent() {
   const onPieceDrop = useCallback((sourceSquare: Square, targetSquare: Square): boolean => {
     const move = engine.move(sourceSquare, targetSquare);
     if (move) {
+      // Track who made this move
+      setPlayerNames(prev => [...prev, 'Player']);
       updateGameState();
       
       // If playing against computer or AI, make their move after a short delay
@@ -85,6 +87,7 @@ export function ChessGameWithAgent() {
             if (moves.length > 0) {
               const randomMove = moves[Math.floor(Math.random() * moves.length)];
               engine.move(randomMove.from as Square, randomMove.to as Square);
+              setPlayerNames(prev => [...prev, 'Computer']);
               updateGameState();
             }
           } else if (gameMode === 'ai') {
@@ -105,10 +108,12 @@ export function ChessGameWithAgent() {
     engine.reset();
     updateGameState();
     setHighlightSquares({});
+    setPlayerNames([]);
   }, [engine, updateGameState]);
 
   const handleUndo = useCallback(() => {
     engine.undo();
+    setPlayerNames(prev => prev.slice(0, -1));
     updateGameState();
   }, [engine, updateGameState]);
 
