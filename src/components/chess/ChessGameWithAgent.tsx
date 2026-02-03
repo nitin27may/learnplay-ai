@@ -74,8 +74,11 @@ export function ChessGameWithAgent() {
   const onPieceDrop = useCallback((sourceSquare: Square, targetSquare: Square): boolean => {
     const move = engine.move(sourceSquare, targetSquare);
     if (move) {
-      // Track who made this move
-      setPlayerNames(prev => [...prev, 'Player']);
+      // Track who made this move based on game mode
+      const playerLabel = gameMode === 'pvp' 
+        ? (playerNames.length % 2 === 0 ? 'White' : 'Black')
+        : 'Player';
+      setPlayerNames(prev => [...prev, playerLabel]);
       updateGameState();
       
       // If playing against computer or AI, make their move after a short delay
@@ -102,7 +105,7 @@ export function ChessGameWithAgent() {
       return true;
     }
     return false;
-  }, [engine, updateGameState, gameMode, appendMessage]);
+  }, [engine, updateGameState, gameMode, appendMessage, playerNames.length]);
 
   const handleNewGame = useCallback(() => {
     engine.reset();
