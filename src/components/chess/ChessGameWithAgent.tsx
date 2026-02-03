@@ -41,6 +41,26 @@ export function ChessGameWithAgent() {
 
   const { appendMessage, isLoading } = useCopilotChat();
 
+  // Handler for Next Step button - defined early for use in markdownTagRenderers
+  const handleNextStep = useCallback(async () => {
+    if (isLoading) return;
+    
+    setIsPaused(false);
+    setHighlightSquares({});
+    
+    console.log('[Chess] Sending continuation message');
+    try {
+      await appendMessage(
+        new TextMessage({
+          role: MessageRole.User,
+          content: 'Continue to the next step',
+        })
+      );
+    } catch (error) {
+      console.error('Failed to continue:', error);
+    }
+  }, [appendMessage, isLoading]);
+
   // Provide readable context
   useCopilotReadable({
     description: 'Current page information for agent routing',
@@ -200,26 +220,6 @@ export function ChessGameWithAgent() {
   const handleFlipBoard = useCallback(() => {
     setOrientation(prev => prev === 'white' ? 'black' : 'white');
   }, []);
-
-  // Handler for Next Step button
-  const handleNextStep = useCallback(async () => {
-    if (isLoading) return;
-    
-    setIsPaused(false);
-    setHighlightSquares({});
-    
-    console.log('[Chess] Sending continuation message');
-    try {
-      await appendMessage(
-        new TextMessage({
-          role: MessageRole.User,
-          content: 'Continue to the next step',
-        })
-      );
-    } catch (error) {
-      console.error('Failed to continue:', error);
-    }
-  }, [appendMessage, isLoading]);
 
   // Handler for ending lesson
   const handleEndLesson = useCallback(() => {
