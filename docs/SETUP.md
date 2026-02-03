@@ -132,9 +132,9 @@ ELEVENLABS_VOICE_ID=JBFqnCBsd6RMkjVDRZzb  # Optional, defaults to "George"
 ### Fallback Behavior
 
 If ElevenLabs is not configured or unavailable:
-- ✅ App continues working normally
-- ✅ Falls back to browser's built-in TTS (less natural)
-- ℹ️ Message shown: "Voice unavailable, using browser TTS"
+- App continues working normally
+- Falls back to browser's built-in TTS (less natural)
+- [INFO] Message shown: "Voice unavailable, using browser TTS"
 
 ---
 
@@ -224,11 +224,11 @@ When in a teaching session:
 ### Visual Highlights
 
 During teaching, the AI highlights cells with colors:
-- 🟢 **Green** - Focus cells for current step
-- 🔵 **Blue** - Related cells to observe
-- 🟡 **Yellow** - Cells to compare
-- 🔴 **Red** - Conflict or error cells
-- 🟣 **Purple** - Advanced pattern highlights
+- **Green** - Focus cells for current step
+- **Blue** - Related cells to observe
+- **Yellow** - Cells to compare
+- **Red** - Conflict or error cells
+- **Purple** - Advanced pattern highlights
 
 ---
 
@@ -451,4 +451,4 @@ useCoAgent({ name: 'sudoku_agent' })  // Must match langgraph.json
 
 ---
 
-**Happy learning!** 🎓
+**Happy learning!**

@@ -78,19 +78,19 @@ flowchart TB
     subgraph Agents["Agent Layer"]
         direction TB
         
-        subgraph Router["🎯 Router Agent"]
+        subgraph Router["Router Agent"]
             RA[Game Router]
             RC[Context Detector]
         end
         
         subgraph Specialized["Specialized Game Agents"]
             direction LR
-            SDA["🔢 Sudoku Agent"]
-            CHA["♟️ Chess Agent"]
-            FGA["🎮 Future Game Agent"]
+            SDA["Sudoku Agent"]
+            CHA["Chess Agent"]
+            FGA["Future Game Agent"]
         end
         
-        subgraph SharedTools["🔧 Shared Tool Library"]
+        subgraph SharedTools["Shared Tool Library"]
             direction LR
             VTL[Voice Tools]
             TTL[Teaching Tools]

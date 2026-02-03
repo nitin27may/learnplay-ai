@@ -443,20 +443,20 @@ Playback
 ### Voice Message Guidelines
 
 **Length**: Keep under 30 words for highlights
-- ✅ "This cell must be 5 because row 2 already has 1 through 4 and 6 through 9"
-- ❌ "Looking at this particular cell in the second row and analyzing all the possibilities, we can determine that the only valid number that can be placed here is 5, and the reason for this is that if we look at row 2, we see that it already contains..."
+- GOOD: "This cell must be 5 because row 2 already has 1 through 4 and 6 through 9"
+- BAD: "Looking at this particular cell in the second row and analyzing all the possibilities, we can determine that the only valid number that can be placed here is 5, and the reason for this is that if we look at row 2, we see that it already contains..."
 
 **Clarity**: Use specific references
-- ✅ "The knight on f3 can fork the king and rook"
-- ❌ "That piece there can do a thing to those other pieces"
+- GOOD: "The knight on f3 can fork the king and rook"
+- BAD: "That piece there can do a thing to those other pieces"
 
 **Tone**: Encouraging and educational
-- ✅ "Great! This move shows you understand naked singles"
-- ❌ "You got it right this time"
+- GOOD: "Great! This move shows you understand naked singles"
+- BAD: "You got it right this time"
 
 **Pacing**: Natural speech patterns
-- ✅ "Each 3×3 box must contain digits 1 through 9 with no repeats"
-- ❌ "Each3by3boxmustcontain1through9withnorepeat"
+- GOOD: "Each 3×3 box must contain digits 1 through 9 with no repeats"
+- BAD: "Each3by3boxmustcontain1through9withnorepeat"
 
 ### Fallback Strategy
 
@@ -535,11 +535,11 @@ async function speak(message: string) {
 ### Color Semantics
 
 **Universal Meanings**:
-- 🔵 **Blue**: Information, explanation, general reference
-- 🟢 **Green**: Correct, suggested, good move
-- 🟡 **Yellow**: Warning, attention needed, constraint
-- 🔴 **Red**: Error, wrong move, threat
-- 🟣 **Purple**: Advanced concept, special case
+- **Blue**: Information, explanation, general reference
+- **Green**: Correct, suggested, good move
+- **Yellow**: Warning, attention needed, constraint
+- **Red**: Error, wrong move, threat
+- **Purple**: Advanced concept, special case
 
 **Game-Specific Usage**:
 

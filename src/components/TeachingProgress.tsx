@@ -46,7 +46,7 @@ export function TeachingProgress({
       >
         <div className="flex items-center gap-3 mb-3">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center">
-            <span className="text-xl">🎯</span>
+            <span className="text-xl font-bold text-white">!</span>
           </div>
           <div>
             <h3 className="font-semibold text-slate-800 text-sm">You're on your own!</h3>

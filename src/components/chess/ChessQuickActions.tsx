@@ -2,10 +2,10 @@
 
 export function ChessQuickActions() {
   const quickActions = [
-    { label: '📚 Learn Chess Basics', message: 'Learn chess basics' },
-    { label: '💡 Suggest Move', message: 'Suggest a good move' },
-    { label: '🤖 AI Opponent', message: 'Make an AI move' },
-    { label: '📊 Analyze Position', message: 'Analyze position' },
+    { label: 'Learn Chess Basics', message: 'Learn chess basics' },
+    { label: 'Suggest Move', message: 'Suggest a good move' },
+    { label: 'AI Opponent', message: 'Make an AI move' },
+    { label: 'Analyze Position', message: 'Analyze position' },
   ];
 
   return (

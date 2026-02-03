@@ -69,7 +69,7 @@ export default function HomePage() {
             <Link href="/chess" className="block h-full">
               <div className="bg-white/95 backdrop-blur rounded-2xl shadow-2xl p-8 hover:shadow-[0_20px_60px_rgba(0,0,0,0.3)] transition-all duration-300 hover:-translate-y-2 cursor-pointer group h-full border-2 border-white/20">
                 <div className="text-7xl mb-4 font-bold text-amber-600 group-hover:scale-110 transition-transform">
-                  ♔♕
+                  CH
                 </div>
                 <h2 className="text-4xl font-bold text-gray-900 mb-3">Chess</h2>
                 <p className="text-gray-700 text-lg mb-4 leading-relaxed">

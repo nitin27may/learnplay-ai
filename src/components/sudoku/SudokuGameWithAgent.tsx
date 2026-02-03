@@ -76,13 +76,13 @@ export default function SudokuGameWithAgent() {
 
   // Log initialization
   useEffect(() => {
-    console.log('🎯 Sudoku page initialized with agent: sudoku_agent');
+    console.log('[Agent] Sudoku page initialized with agent: sudoku_agent');
   }, []);
 
   // Initialize agent (mark as initialized after first render)
   useEffect(() => {
     if (!agentInitialized.current) {
-      console.log('🎮 Sudoku agent initialized with page context');
+      console.log('[Agent] Sudoku agent initialized with page context');
       agentInitialized.current = true;
     }
   }, []);
@@ -105,7 +105,7 @@ export default function SudokuGameWithAgent() {
       for (let r = 0; r < 9; r++) {
         for (let c = 0; c < 9; c++) {
           if (newGrid[r][c] !== currentGrid[r][c] && newGrid[r][c] !== null) {
-            console.log('📝 User placed:', newGrid[r][c], 'at', r, c);
+            console.log('[User] Placed:', newGrid[r][c], 'at', r, c);
             setLastUserMove({ row: r, col: c, value: newGrid[r][c] });
             break;
           }
@@ -140,7 +140,7 @@ export default function SudokuGameWithAgent() {
       },
     ],
     handler({ totalSteps, topic }) {
-      console.log('📚 Starting teaching session:', topic);
+      console.log('[Teaching] Starting teaching session:', topic);
       setIsTeaching(true);
       setIsPaused(false);
       setTotalSteps(totalSteps);
@@ -179,7 +179,7 @@ export default function SudokuGameWithAgent() {
     description: 'End the current teaching session',
     parameters: [],
     handler() {
-      console.log('✅ Ending teaching session');
+      console.log('[Teaching] Ending teaching session');
       setIsTeaching(false);
       setIsPaused(false);
       setCurrentStep('');
@@ -243,7 +243,7 @@ export default function SudokuGameWithAgent() {
     description: 'Get the current state of the Sudoku grid',
     parameters: [],
     handler() {
-      console.log('📊 Sending current grid to agent:', currentGrid);
+      console.log('[Grid] Sending current grid to agent:', currentGrid);
       return JSON.stringify({ grid: currentGrid });
     },
   });
@@ -254,7 +254,7 @@ export default function SudokuGameWithAgent() {
     description: 'Analyze the current grid and return the next best cell to fill with explanation. Returns row, col, value, and explanation. Use this for step-by-step solving - much simpler than calling getCurrentGrid then suggest_next_move.',
     parameters: [],
     handler() {
-      console.log('🎯 Analyzing grid for next move:', currentGrid);
+      console.log('[Solver] Analyzing grid for next move:', currentGrid);
       
       if (currentGrid.length === 0) {
         return JSON.stringify({
@@ -284,7 +284,7 @@ export default function SudokuGameWithAgent() {
         explanation = `The number ${bestMove.value} can only go in this cell within its ${bestMove.strategy.includes('row') ? 'row' : bestMove.strategy.includes('col') ? 'column' : 'box'}.`;
       }
       
-      console.log('✅ Found move:', { row: cell.row, col: cell.col, value: bestMove.value, strategy: bestMove.strategy });
+      console.log('[Solver] Found move:', { row: cell.row, col: cell.col, value: bestMove.value, strategy: bestMove.strategy });
       
       return JSON.stringify({
         has_suggestion: true,
@@ -330,7 +330,7 @@ export default function SudokuGameWithAgent() {
       },
     ],
     handler({ row, col, value }) {
-      console.log('🤖 AI filling cell:', { row, col, value });
+      console.log('[AI] Filling cell:', { row, col, value });
       setExternalCellUpdate({
         row,
         col,
@@ -346,7 +346,7 @@ export default function SudokuGameWithAgent() {
     description: 'Check if the user recently made a wrong move and explain why it conflicts. Call this BEFORE giving hints to provide better feedback. Returns conflicting cells with yellow (user cell) and red (conflict) highlights.',
     parameters: [],
     handler() {
-      console.log('🔍 Analyzing for wrong moves, lastUserMove:', lastUserMove);
+      console.log('[Analyzer] Analyzing for wrong moves, lastUserMove:', lastUserMove);
       
       if (!lastUserMove || lastUserMove.value === null) {
         return JSON.stringify({
@@ -363,7 +363,7 @@ export default function SudokuGameWithAgent() {
       );
       
       if (conflicts.length > 0) {
-        console.log('❌ Found conflicts:', conflicts);
+        console.log('[Analyzer] Found conflicts:', conflicts);
         
         // Build highlight cells: user's cell in yellow, conflicting cells in red
         const highlightCells = [
@@ -431,7 +431,7 @@ export default function SudokuGameWithAgent() {
       
       // Validate and handle cells parameter
       if (!cells) {
-        console.error('❌ No cells provided to highlightCells');
+        console.error('[Error] No cells provided to highlightCells');
         return 'Error: No cells provided';
       }
       
@@ -439,9 +439,9 @@ export default function SudokuGameWithAgent() {
       let cellsArray;
       try {
         cellsArray = Array.isArray(cells) ? cells : [cells];
-        console.log('✅ Processed cells array:', cellsArray);
+        console.log('[Highlight] Processed cells array:', cellsArray);
       } catch (err) {
-        console.error('❌ Error processing cells:', err);
+        console.error('[Error] Error processing cells:', err);
         return 'Error: Invalid cells format';
       }
       
@@ -459,7 +459,7 @@ export default function SudokuGameWithAgent() {
     description: 'Clear all current highlights from the board',
     parameters: [],
     handler() {
-      console.log('🧹 Manually clearing highlights');
+      console.log('[Highlight] Manually clearing highlights');
       setAnnotations([]);
       setAnnotationMessage('');
       return 'Highlights cleared';
@@ -479,7 +479,7 @@ export default function SudokuGameWithAgent() {
       },
     ],
     handler({ message }) {
-      console.log('🔊 Speaking message:', message);
+      console.log('[Voice] Speaking message:', message);
       
       if (!message || message.trim().length === 0) {
         return 'Error: Empty message';
@@ -499,7 +499,7 @@ export default function SudokuGameWithAgent() {
           
           // Check if response is JSON (error) or audio
           if (contentType?.includes('application/json')) {
-            console.log('⚠️ TTS not configured, falling back to browser TTS');
+            console.log('[Warning] TTS not configured, falling back to browser TTS');
             
             // Fallback to browser TTS
             if ('speechSynthesis' in window) {
@@ -548,7 +548,7 @@ export default function SudokuGameWithAgent() {
     setAnnotations([]);
     setAnnotationMessage('');
     
-    console.log('📤 Sending continuation message to agent');
+    console.log('[Chat] Sending continuation message to agent');
     try {
       await appendMessage(
         new TextMessage({
@@ -563,7 +563,7 @@ export default function SudokuGameWithAgent() {
 
   // Handler for "I'll Try Myself" button - ends teaching but shows hint prompt
   const handleTryMyself = useCallback(() => {
-    console.log('💪 User wants to try themselves');
+    console.log('[User] User wants to try themselves');
     setIsTeaching(false);
     setIsPaused(false);
     setAnnotations([]);
@@ -573,7 +573,7 @@ export default function SudokuGameWithAgent() {
 
   // Handler for quick hint from the hint prompt
   const handleQuickHint = useCallback(async () => {
-    console.log('💡 User requested quick hint');
+    console.log('[User] User requested quick hint');
     setShowHintPrompt(false);
     try {
       await appendMessage(

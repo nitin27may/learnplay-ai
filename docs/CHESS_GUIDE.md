@@ -428,30 +428,30 @@ agent/
 ### Existing Chess Learning Platforms
 
 **Chess.com Lessons**
-- ✅ Comprehensive lesson library
-- ✅ Interactive puzzles
-- ❌ Not AI-powered (pre-scripted)
-- ❌ Limited personalization
+- [+] Comprehensive lesson library
+- [+] Interactive puzzles
+- [-] Not AI-powered (pre-scripted)
+- [-] Limited personalization
 
 **Lichess Study**
-- ✅ Free and open-source
-- ✅ Stockfish analysis
-- ❌ Requires chess knowledge to use effectively
-- ❌ No guided teaching
+- [+] Free and open-source
+- [+] Stockfish analysis
+- [-] Requires chess knowledge to use effectively
+- [-] No guided teaching
 
 **Magnus Trainer**
-- ✅ Gamified learning
-- ✅ Progressive difficulty
-- ❌ Limited free content
-- ❌ No AI explanations
+- [+] Gamified learning
+- [+] Progressive difficulty
+- [-] Limited free content
+- [-] No AI explanations
 
 **Our Advantage**:
-- ✅ AI tutor that explains concepts naturally
-- ✅ Voice narration for accessibility
-- ✅ Visual highlights synchronized with teaching
-- ✅ Free and open-source
-- ✅ Adaptive to individual learning pace
-- ✅ Seamless integration of play and learning
+- [+] AI tutor that explains concepts naturally
+- [+] Voice narration for accessibility
+- [+] Visual highlights synchronized with teaching
+- [+] Free and open-source
+- [+] Adaptive to individual learning pace
+- [+] Seamless integration of play and learning
 
 ## Success Metrics
 

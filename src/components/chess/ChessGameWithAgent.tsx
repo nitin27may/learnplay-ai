@@ -133,7 +133,7 @@ export function ChessGameWithAgent() {
       { name: 'topic', type: 'string', description: 'Lesson topic', required: true },
     ],
     handler({ totalSteps, topic }) {
-      console.log(`📚 Starting lesson: ${topic} with ${totalSteps} steps`);
+      console.log(`[Teaching] Starting lesson: ${topic} with ${totalSteps} steps`);
       setIsTeaching(true);
       setTotalSteps(totalSteps);
       setCurrentStep(1);
@@ -152,7 +152,7 @@ export function ChessGameWithAgent() {
       { name: 'stepDescription', type: 'string', description: 'Step description', required: true },
     ],
     handler({ stepNumber, stepDescription }) {
-      console.log(`📖 Step ${stepNumber}: ${stepDescription}`);
+      console.log(`[Teaching] Step ${stepNumber}: ${stepDescription}`);
       setCurrentStep(stepNumber);
       setCurrentStepDescription(stepDescription);
       return `Updated to step ${stepNumber}`;
@@ -165,7 +165,7 @@ export function ChessGameWithAgent() {
     description: 'End the teaching session',
     parameters: [],
     handler() {
-      console.log('✅ Ending teaching session');
+      console.log('[Teaching] Ending teaching session');
       setIsTeaching(false);
       setCurrentStep(0);
       setTotalSteps(0);
@@ -242,7 +242,7 @@ export function ChessGameWithAgent() {
       { name: 'message', type: 'string', description: 'Text to speak', required: true },
     ],
     handler({ message }) {
-      console.log('🔊 Speaking:', message);
+      console.log('[Voice] Speaking:', message);
       
       // Fire-and-forget async audio
       (async () => {

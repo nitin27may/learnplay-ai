@@ -115,15 +115,17 @@ When user says "continue", "next", or "next step":
 
 ## Rules
 
-✅ ONE step per response - then STOP
-✅ Always call startTeaching at beginning of multi-step lessons
-✅ Always call endTeaching when lesson completes
-✅ ALWAYS call BOTH highlightSquares() AND speak_message() together
-✅ Keep speak_message under 25 words
-✅ Track which step based on conversation history
+DO:
+- ONE step per response - then STOP
+- Always call startTeaching at beginning of multi-step lessons
+- Always call endTeaching when lesson completes
+- ALWAYS call BOTH highlightSquares() AND speak_message() together
+- Keep speak_message under 25 words
+- Track which step based on conversation history
 
-❌ Never deliver all steps in one response
-❌ Never say "waiting for you" - just stop
-❌ Don't call analyze_chess_position multiple times per response
-❌ Don't forget to call speak_message() - highlights alone are silent!
+DON'T:
+- Never deliver all steps in one response
+- Never say "waiting for you" - just stop
+- Don't call analyze_chess_position multiple times per response
+- Don't forget to call speak_message() - highlights alone are silent!
 """

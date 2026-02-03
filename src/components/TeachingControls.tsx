@@ -15,10 +15,10 @@ interface TeachingControlsProps {
 
 export function TeachingControls({ step, onAction }: TeachingControlsProps) {
   const buttons: InteractiveButton[] = [
-    { label: 'Next Step', action: 'Continue to next step', icon: '➡️' },
-    { label: 'Explain More', action: 'Explain this step in more detail', icon: '💡' },
-    { label: 'Try Another', action: 'Show me a different example', icon: '🎯' },
-    { label: 'Show Solution', action: 'Show me the solution', icon: '✅' },
+    { label: 'Next Step', action: 'Continue to next step', icon: '>' },
+    { label: 'Explain More', action: 'Explain this step in more detail', icon: '?' },
+    { label: 'Try Another', action: 'Show me a different example', icon: '~' },
+    { label: 'Show Solution', action: 'Show me the solution', icon: '+' },
   ];
 
   if (step === 0) return null;

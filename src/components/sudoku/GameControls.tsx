@@ -142,7 +142,7 @@ export function GameControls({
           animate={{ scale: 1, opacity: 1 }}
           className="p-4 bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-500 text-white rounded-xl text-center shadow-lg"
         >
-          <div className="text-xl font-bold mb-1">🎉 Congratulations!</div>
+          <div className="text-xl font-bold mb-1">Congratulations!</div>
           <div className="text-sm opacity-90">
             Completed in {formatTime(gameState.elapsedTime)}
           </div>

@@ -52,7 +52,7 @@ export function SudokuGame({ initialDifficulty = 'medium', annotations = [], ann
   // Handle external cell updates from AI
   useEffect(() => {
     if (externalCellUpdate && externalCellUpdate.timestamp > lastExternalUpdateRef.current) {
-      console.log('🤖 AI placing number:', externalCellUpdate);
+      console.log('[AI] Placing number:', externalCellUpdate);
       lastExternalUpdateRef.current = externalCellUpdate.timestamp;
       placeNumberAt(externalCellUpdate.row, externalCellUpdate.col, externalCellUpdate.value);
     }
@@ -183,7 +183,7 @@ export function SudokuGame({ initialDifficulty = 'medium', annotations = [], ann
             {/* Instructions */}
             <div className="mt-24 max-w-3xl mx-auto bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-white/50">
               <h2 className="text-xl font-bold text-slate-800 mb-3 flex items-center gap-2">
-                <span className="text-2xl">📖</span> How to Play
+                <span className="text-2xl">?</span> How to Play
               </h2>
               <ul className="space-y-2 text-slate-600">
                 <li className="flex items-start">

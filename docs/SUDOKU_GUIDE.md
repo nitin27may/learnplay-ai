@@ -120,7 +120,7 @@ Single Action (not a teaching session):
 Located in top-right corner during teaching:
 ```
 ┌─────────────────────────────┐
-│ ● Teaching in Progress   ✕  │
+│ [*] Teaching in Progress   X  │
 ├─────────────────────────────┤
 │ Step 2 of 5          25%    │
 │ ▓▓▓░░░░░░░░░░░░░░░░░░       │
@@ -429,33 +429,33 @@ def explain_sudoku_basics(step: str) -> dict:
 ## Best Practices
 
 ### For AI Teaching
-- ✅ Always call `getCurrentGrid()` before making suggestions
-- ✅ Use `startTeaching` for multi-step lessons
-- ✅ Wait for user confirmation between steps
-- ✅ Keep voice messages under 30 words
-- ✅ Highlight relevant cells with appropriate colors
-- ✅ Call `endTeaching()` when done
-- ❌ Don't auto-advance through teaching steps
-- ❌ Don't start teaching sessions for simple hints
+- DO: Always call `getCurrentGrid()` before making suggestions
+- DO: Use `startTeaching` for multi-step lessons
+- DO: Wait for user confirmation between steps
+- DO: Keep voice messages under 30 words
+- DO: Highlight relevant cells with appropriate colors
+- DO: Call `endTeaching()` when done
+- DON'T: Auto-advance through teaching steps
+- DON'T: Start teaching sessions for simple hints
 
 ### For Visual Feedback
-- ✅ Use green for suggested moves
-- ✅ Use blue for general information
-- ✅ Use yellow for constraints
-- ✅ Use red for errors
-- ✅ Add labels for specific numbers
-- ✅ Keep highlights visible until user acts
-- ❌ Don't overload board with too many highlights
-- ❌ Don't use conflicting colors
+- DO: Use green for suggested moves
+- DO: Use blue for general information
+- DO: Use yellow for constraints
+- DO: Use red for errors
+- DO: Add labels for specific numbers
+- DO: Keep highlights visible until user acts
+- DON'T: Overload board with too many highlights
+- DON'T: Use conflicting colors
 
 ### For User Experience
-- ✅ Provide clear progress indicators
-- ✅ Allow pausing/stopping anytime
-- ✅ Disable input when paused
-- ✅ Show timer and stats
-- ✅ Celebrate completion
-- ❌ Don't interrupt user flow
-- ❌ Don't force teaching on advanced users
+- DO: Provide clear progress indicators
+- DO: Allow pausing/stopping anytime
+- DO: Disable input when paused
+- DO: Show timer and stats
+- DO: Celebrate completion
+- DON'T: Interrupt user flow
+- DON'T: Force teaching on advanced users
 
 ## Future Enhancements
 

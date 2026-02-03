@@ -28,7 +28,7 @@ export function MoonCard({ themeColor, status, respond }: MoonCardProps) {
         {/* Show decision or prompt */}
         {decision === "launched" ? (
           <div className="text-center">
-            <div className="text-7xl mb-4">🌕</div>
+            <div className="text-7xl mb-4 font-bold text-white">MOON</div>
             <h2 className="text-2xl font-bold text-white mb-2">
               Mission Launched
             </h2>
@@ -38,23 +38,23 @@ export function MoonCard({ themeColor, status, respond }: MoonCardProps) {
           </div>
         ) : decision === "aborted" ? (
           <div className="text-center">
-            <div className="text-7xl mb-4">✋</div>
+            <div className="text-7xl mb-4 font-bold text-white">STOP</div>
             <h2 className="text-2xl font-bold text-white mb-2">
               Mission Aborted
             </h2>
             <p className="text-white/90">
-              Staying on Earth 🌍
+              Staying on Earth
             </p>
           </div>
         ) : (
           <>
             <div className="text-center mb-6">
-              <div className="text-7xl mb-4">🚀</div>
+              <div className="text-7xl mb-4 font-bold text-white">GO</div>
               <h2 className="text-2xl font-bold text-white mb-2">
                 Ready for Launch?
               </h2>
               <p className="text-white/90">
-                Mission to the Moon 🌕
+                Mission to the Moon
               </p>
             </div>
             
@@ -67,7 +67,7 @@ export function MoonCard({ themeColor, status, respond }: MoonCardProps) {
                     shadow-lg hover:shadow-xl transition-all 
                     hover:scale-105 active:scale-95"
                 >
-                  🚀 Launch!
+                  Launch!
                 </button>
                 <button
                   onClick={handleAbort}
@@ -76,7 +76,7 @@ export function MoonCard({ themeColor, status, respond }: MoonCardProps) {
                     transition-all hover:scale-105 active:scale-95
                     hover:bg-black/30"
                 >
-                  ✋ Abort
+                  Abort
                 </button>
               </div>
             )}

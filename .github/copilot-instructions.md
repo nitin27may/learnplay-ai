@@ -124,7 +124,7 @@ For multi-step teaching (e.g., "Explain basics"):
 ```python
 for step in steps:
     teach_step(step)
-    wait_for_user()  # ❌ LLMs can't wait!
+    wait_for_user()  # [ERROR] LLMs can't wait!
 ```
 
 **Correct approach** (one step per request):

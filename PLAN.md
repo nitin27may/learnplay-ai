@@ -2,7 +2,7 @@
 
 **Project Status**: Sudoku MVP Complete | Security Hardening Required Before Public Launch
 
-## 📋 Table of Contents
+## Table of Contents
 
 1. [Current Status](#current-status)
 2. [Phase 7: Security Hardening (CRITICAL)](#phase-7-security-hardening-critical)
@@ -16,33 +16,33 @@
 
 | Phase | Status | Description |
 |-------|--------|-------------|
-| Phases 1-6 | ✅ **COMPLETE** | Sudoku game with AI teaching system |
-| Phase 7 | 🔴 **CRITICAL** | Security hardening (BLOCKER for public launch) |
-| Phase 8 | 📋 **PLANNED** | Chess Academy implementation |
-| Phase 9 | 📅 **FUTURE** | Platform enhancements |
+| Phases 1-6 | [COMPLETE] | Sudoku game with AI teaching system |
+| Phase 7 | [CRITICAL] | Security hardening (BLOCKER for public launch) |
+| Phase 8 | [PLANNED] | Chess Academy implementation |
+| Phase 9 | [FUTURE] | Platform enhancements |
 
 ### What's Working
-- ✅ Sudoku game with 4 difficulty levels
-- ✅ Multi-agent architecture (Router, Sudoku, Chess agents)
-- ✅ Interactive AI tutor with step-by-step teaching
-- ✅ Voice mode (ElevenLabs TTS)
-- ✅ Multi-LLM support (OpenAI, Anthropic, Azure, Ollama)
-- ✅ Visual highlights and interactive guidance
+- Sudoku game with 4 difficulty levels
+- Multi-agent architecture (Router, Sudoku, Chess agents)
+- Interactive AI tutor with step-by-step teaching
+- Voice mode (ElevenLabs TTS)
+- Multi-LLM support (OpenAI, Anthropic, Azure, Ollama)
+- Visual highlights and interactive guidance
 
 ### What's Needed
-- 🔴 Authentication system (Google SSO)
-- 🔴 Rate limiting and cost controls
-- 🔴 Input validation and sanitization
-- 🔴 Prompt injection protection
-- 🔴 Security headers and CORS
+- Authentication system (Google SSO)
+- Rate limiting and cost controls
+- Input validation and sanitization
+- Prompt injection protection
+- Security headers and CORS
 
 ---
 
 ## Phase 7: Security Hardening (CRITICAL)
 
-> ⚠️ **BLOCKER**: Application MUST NOT be deployed publicly until this phase is complete  
-> 📖 **Full Guide**: [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md)  
-> ⏱️ **Timeline**: 2-3 weeks
+> **WARNING**: Application MUST NOT be deployed publicly until this phase is complete  
+> **Full Guide**: [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md)  
+> **Timeline**: 2-3 weeks
 
 ### 7.1 Authentication & Authorization (Week 1)
 
@@ -72,10 +72,10 @@
 - [ ] 3.6 Test session persistence across browser restarts
 
 **Success Criteria:**
-- ✅ Unauthenticated users cannot access API endpoints
-- ✅ Users can sign in with Google
-- ✅ Sessions persist correctly
-- ✅ Logout works properly
+- Unauthenticated users cannot access API endpoints
+- Users can sign in with Google
+- Sessions persist correctly
+- Logout works properly
 
 ---
 
@@ -113,10 +113,10 @@
 - [ ] 7.5 Create emergency kill switch for runaway costs
 
 **Success Criteria:**
-- ✅ Rate limits enforced correctly
-- ✅ 429 errors returned when limits exceeded
-- ✅ Usage tracked and logged
-- ✅ Alerts fire when thresholds exceeded
+- Rate limits enforced correctly
+- 429 errors returned when limits exceeded
+- Usage tracked and logged
+- Alerts fire when thresholds exceeded
 
 ---
 
@@ -146,10 +146,10 @@
 - [ ] 10.5 Test agent with invalid grids
 
 **Success Criteria:**
-- ✅ Invalid inputs rejected with clear errors
-- ✅ TTS endpoint validates text properly
-- ✅ Agent validates all grid data
-- ✅ No crashes from malformed inputs
+- Invalid inputs rejected with clear errors
+- TTS endpoint validates text properly
+- Agent validates all grid data
+- No crashes from malformed inputs
 
 ---
 
@@ -180,10 +180,10 @@
 - [ ] 13.6 Test with adversarial prompts
 
 **Success Criteria:**
-- ✅ Agent rejects prompt injection attempts
-- ✅ Agent never reveals system prompt
-- ✅ Agent stays on topic
-- ✅ No API keys in responses
+- Agent rejects prompt injection attempts
+- Agent never reveals system prompt
+- Agent stays on topic
+- No API keys in responses
 
 ---
 
@@ -205,10 +205,10 @@
 - [ ] 15.6 Test headers with security scanner
 
 **Success Criteria:**
-- ✅ CORS properly restricted
-- ✅ All security headers present
-- ✅ No XSS vulnerabilities
-- ✅ No clickjacking vulnerabilities
+- CORS properly restricted
+- All security headers present
+- No XSS vulnerabilities
+- No clickjacking vulnerabilities
 
 ---
 
@@ -229,10 +229,10 @@
 - [ ] 17.5 Set up log aggregation (CloudWatch/DataDog)
 
 **Success Criteria:**
-- ✅ Errors handled gracefully
-- ✅ No information leakage
-- ✅ Security events logged
-- ✅ Monitoring dashboard functional
+- Errors handled gracefully
+- No information leakage
+- Security events logged
+- Monitoring dashboard functional
 
 ---
 
@@ -263,20 +263,19 @@
 - [ ] 20.6 Prepare for public launch
 
 **Success Criteria:**
-- ✅ No critical vulnerabilities
-- ✅ No high-severity vulnerabilities
-- ✅ All security measures tested
-- ✅ Documentation complete
+- No critical vulnerabilities
+- No high-severity vulnerabilities
+- All security measures tested
+- Documentation complete
 
 ---
 
 ## Phase 8: Chess Academy
 
-> 📋 **Status**: Planned  
-> ⏱️ **Timeline**: 14 weeks  
-> 📖 **Dependency**: Security hardening must be complete
+> **Status**: Planned  
+> **Dependency**: Security hardening must be complete
 
-### 8.1 Core Chess Game (4 weeks)
+### 8.1 Core Chess Game (2 weeks)
 
 #### Task 21: Chess Project Setup
 - [ ] 21.1 Create `src/app/chess/page.tsx`
@@ -312,7 +311,7 @@
 
 ---
 
-### 8.2 AI Opponent (2 weeks)
+### 8.2 AI Opponent (1 weeks)
 
 #### Task 25: Stockfish Integration
 - [ ] 25.1 Create `src/lib/chess/stockfish.ts`
@@ -335,7 +334,7 @@
 
 ---
 
-### 8.3 Teaching System (4 weeks)
+### 8.3 Teaching System (2 weeks)
 
 #### Task 28: Chess Teaching Agent
 - [ ] 28.1 Create `analyze_chess_position()` tool
@@ -424,8 +423,8 @@
 
 ## Phase 9: Platform Enhancements
 
-> 📅 **Status**: Future Planning  
-> ⏱️ **Timeline**: TBD
+> **Status**: Future Planning  
+> **Timeline**: TBD
 
 ### 9.1 User System
 
@@ -460,18 +459,18 @@
 
 | Phase | Description | Duration | Status | Priority |
 |-------|-------------|----------|--------|----------|
-| 1-6 | Sudoku MVP | Completed | ✅ Complete | - |
-| **7** | **Security Hardening** | **2-3 weeks** | **🔴 IN PROGRESS** | **P0 - BLOCKER** |
-| 7.1-7.3 | Auth + Rate Limiting + Validation | 2 weeks | 🔴 Critical | P0 |
-| 7.4-7.5 | Prompt Protection + Headers | 1 week | 🟠 High | P1 |
-| 7.6-7.7 | Logging + Testing | 3-4 days | 🟡 Medium | P2 |
-| **8** | **Chess Academy** | **14 weeks** | **📋 Planned** | **Major Feature** |
-| 8.1 | Chess Core Game | 4 weeks | 📋 Planned | - |
-| 8.2 | AI Opponent | 2 weeks | 📋 Planned | - |
-| 8.3 | Teaching System | 4 weeks | 📋 Planned | - |
-| 8.4 | Opening Theory | 2 weeks | 📋 Planned | - |
-| 8.5 | Polish & Testing | 2 weeks | 📋 Planned | - |
-| **9** | **Platform Enhancements** | **TBD** | **📅 Future** | - |
+| 1-6 | Sudoku MVP | Completed | [Complete] | - |
+| **7** | **Security Hardening** | **2-3 weeks** | **[IN PROGRESS]** | **P0 - BLOCKER** |
+| 7.1-7.3 | Auth + Rate Limiting + Validation | 2 weeks | [Critical] | P0 |
+| 7.4-7.5 | Prompt Protection + Headers | 1 week | [High] | P1 |
+| 7.6-7.7 | Logging + Testing | 3-4 days | [Medium] | P2 |
+| **8** | **Chess Academy** | **14 weeks** | **[Planned]** | **Major Feature** |
+| 8.1 | Chess Core Game | 4 weeks | [Planned] | - |
+| 8.2 | AI Opponent | 2 weeks | [Planned] | - |
+| 8.3 | Teaching System | 4 weeks | [Planned] | - |
+| 8.4 | Opening Theory | 2 weeks | [Planned] | - |
+| 8.5 | Polish & Testing | 2 weeks | [Planned] | - |
+| **9** | **Platform Enhancements** | **TBD** | **[Future]** | - |
 
 ---
 
