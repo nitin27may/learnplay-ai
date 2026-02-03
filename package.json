@@ -16,9 +16,10 @@
     "postinstall": "npm run install:agent"
   },
   "dependencies": {
-    "@copilotkit/react-core": "1.51.0",
-    "@copilotkit/react-ui": "1.51.0",
-    "@copilotkit/runtime": "1.51.0",
+    "@copilotkit/react-core": "^1.51.3",
+    "@copilotkit/react-textarea": "^1.51.3",
+    "@copilotkit/react-ui": "^1.51.3",
+    "@copilotkit/runtime": "^1.51.3",
     "chess.js": "^1.4.0",
     "framer-motion": "^12.29.2",
     "next": "16.1.1",

@@ -1,460 +1,342 @@
 # LearnPlay.ai
 
-**An intelligent educational platform that teaches classic board games through AI-powered interactive tutoring.**
+**AI-powered educational platform that teaches strategy games through interactive tutoring.**
 
-LearnPlay.ai combines the timeless appeal of strategy games (Sudoku and Chess) with cutting-edge AI technology to create an engaging, personalized learning experience. Each game features an AI tutor that explains rules, demonstrates strategies, and teaches step-by-step solutions with interactive visual guidance and voice narration.
+LearnPlay.ai uses cutting-edge AI agents to teach classic board games (Sudoku and Chess) with real-time guidance, visual highlights, and voice explanations. Each game has a specialized AI tutor that adapts to your skill level and teaches step-by-step.
 
 ![Next.js](https://img.shields.io/badge/Next.js-16.1-black) ![CopilotKit](https://img.shields.io/badge/CopilotKit-1.51-blue) ![LangGraph](https://img.shields.io/badge/LangGraph-1.0-green) ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
 
+## Project Overview
+
+### What's Working Now
+- **Sudoku Game**: Complete with 4 difficulty levels and AI tutor
+- **Multi-Agent System**: Specialized agents for each game
+- **Voice Teaching**: Natural voice explanations (ElevenLabs TTS)
+- **Multi-LLM Support**: Works with OpenAI, Anthropic, Azure OpenAI, Ollama
+- **Interactive Guidance**: Visual highlights and step-by-step lessons
+
+### Coming Soon
+- **Chess Game**: Full chess implementation with AI opponent
+- **User Authentication**: Save progress and track learning
+- **Mobile Support**: Responsive design for tablets and phones
+
+---
+
 ## Architecture
 
-LearnPlay.ai uses a modern AI-first architecture with CopilotKit's AG-UI (Agent-User Interface) protocol enabling seamless communication between the React frontend and Python AI agent.
-
-### System Architecture
+LearnPlay.ai uses a **Multi-Agent Architecture** where specialized AI agents handle specific games, orchestrated through **CopilotKit's AG-UI protocol** for seamless frontend-backend communication.
 
 ```mermaid
 flowchart TB
-    subgraph Frontend["Frontend (Next.js + React)"]
-        UI[Game UI Components]
-        CK[CopilotKit Provider]
-        FT[Frontend Tools]
-        Chat[Chat Sidebar]
+    subgraph Frontend["Frontend (Next.js 16 + React 19)"]
+        HomePage[Home Page]
+        SudokuPage[Sudoku Page]
+        ChessPage[Chess Page]
     end
-
-    subgraph AGUI["AG-UI Protocol Layer"]
-        WS[WebSocket Connection]
-        HTTP[HTTP Endpoints]
-        State[Shared State Sync]
+    
+    subgraph Runtime["CopilotKit Runtime"]
+        Router[Agent Router]
     end
-
-    subgraph Backend["Backend (Python + LangGraph)"]
-        Agent[LangGraph Agent]
-        Tools[Sudoku Tools]
-        LLM[LLM Provider]
+    
+    subgraph Agents["Specialized AI Agents (Python + LangGraph)"]
+        direction LR
+        
+        RouterAgent["Router Agent<br/>(General Assistant)"]
+        SudokuAgent["Sudoku Agent<br/>(~80 line prompt)"]
+        ChessAgent["Chess Agent<br/>(~80 line prompt)"]
+    end
+    
+    subgraph Shared["Shared Tools"]
+        Voice[Voice/TTS]
+        Teaching[Teaching Utilities]
+        State[Base State]
+    end
+    
+    subgraph External["External Services"]
+        LLM[OpenAI/Claude/Ollama]
         TTS[ElevenLabs TTS]
     end
-
-    subgraph External["External Services"]
-        OpenAI[OpenAI / Claude / Ollama]
-        ElevenLabs[ElevenLabs API]
-    end
-
-    UI <--> CK
-    Chat <--> CK
-    FT <--> CK
-    CK <--> WS
-    CK <--> HTTP
-    WS <--> State
-    State <--> Agent
-    Agent <--> Tools
-    Agent <--> LLM
-    Agent <--> TTS
-    LLM <--> OpenAI
-    TTS <--> ElevenLabs
-
+    
+    HomePage --> Router
+    SudokuPage --> Router
+    ChessPage --> Router
+    
+    Router -->|"general queries"| RouterAgent
+    Router -->|"sudoku context"| SudokuAgent
+    Router -->|"chess context"| ChessAgent
+    
+    RouterAgent --> Shared
+    SudokuAgent --> Shared
+    ChessAgent --> Shared
+    
+    RouterAgent --> LLM
+    SudokuAgent --> LLM
+    ChessAgent --> LLM
+    
+    Shared --> TTS
+    
     style Frontend fill:#4A90A4,stroke:#2C5F6E,color:#fff
-    style AGUI fill:#7B68A6,stroke:#4A3D6E,color:#fff
-    style Backend fill:#5A9A6E,stroke:#3D6B4A,color:#fff
-    style External fill:#C4A35A,stroke:#8B7340,color:#fff
+    style Runtime fill:#7B68A6,stroke:#4A3D6E,color:#fff
+    style Agents fill:#5A9A6E,stroke:#3D6B4A,color:#fff
+    style Shared fill:#C4A35A,stroke:#8B7340,color:#fff
+    style External fill:#E85D75,stroke:#B83E54,color:#fff
 ```
 
-### AG-UI Protocol Flow
-
-The AG-UI (Agent-User Interface) protocol is the communication layer that enables real-time, bidirectional interaction between the AI agent and the user interface.
-
-```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'actorBkg': '#4A90A4', 'actorTextColor': '#fff', 'actorBorder': '#2C5F6E', 'signalColor': '#4A90A4', 'signalTextColor': '#4A90A4', 'loopTextColor': '#7B68A6', 'labelTextColor': '#5A9A6E', 'noteBkgColor': '#F5E6C8', 'noteTextColor': '#333'}}}%%
-sequenceDiagram
-    participant User
-    participant React as React Frontend
-    participant CopilotKit as CopilotKit Runtime
-    participant Agent as LangGraph Agent
-    participant LLM as LLM Provider
-
-    User->>React: "Teach me step by step"
-    React->>CopilotKit: Send message + game state
-    CopilotKit->>Agent: Forward with context
-    Agent->>LLM: Generate teaching plan
-    LLM-->>Agent: Response with steps
-    
-    loop For each teaching step
-        Agent->>CopilotKit: Call frontend tool (highlightCells)
-        CopilotKit->>React: Execute tool in UI
-        React->>React: Highlight cells + play audio
-        React-->>CopilotKit: Tool result
-        CopilotKit-->>Agent: Continue execution
-    end
-    
-    Agent-->>CopilotKit: Final response
-    CopilotKit-->>React: Display in chat
-    React-->>User: Visual + voice teaching
-```
-
-### How AG-UI Protocol Helps
-
-| Feature | How AG-UI Enables It |
-|---------|---------------------|
-| **Real-time UI Updates** | Agent calls frontend tools (`highlightCells`, `startTeaching`) that directly manipulate React state |
-| **Bidirectional State Sync** | Game grid state is shared with agent via `useCoAgent`, enabling context-aware responses |
-| **Streaming Responses** | Messages stream token-by-token for natural conversation feel |
-| **Tool Execution** | Agent can trigger UI actions (highlights, voice, progress bars) without page refresh |
-| **Type Safety** | Shared TypeScript/Python schemas ensure consistent data structures |
-
-### Frontend Tools (React → Agent)
-
-The frontend exposes tools that the AI agent can call to control the UI:
-
-```mermaid
-flowchart LR
-    subgraph Agent["LangGraph Agent"]
-        A1[Analyze Grid]
-        A2[Generate Explanation]
-        A3[Call Frontend Tool]
-    end
-
-    subgraph Tools["Frontend Tools"]
-        T1[highlightCells]
-        T2[startTeaching]
-        T3[updateTeachingStep]
-        T4[stopTeaching]
-        T5[setTeachingMode]
-    end
-
-    subgraph UI["UI Effects"]
-        U1[Cell Highlighting]
-        U2[Progress Bar]
-        U3[Voice Playback]
-        U4[Mode Switching]
-    end
-
-    A3 --> T1 --> U1
-    A3 --> T2 --> U2
-    A3 --> T3 --> U2
-    A3 --> T4 --> U2
-    A3 --> T5 --> U4
-    T1 --> U3
-
-    style Agent fill:#5A9A6E,stroke:#3D6B4A,color:#fff
-    style Tools fill:#7B68A6,stroke:#4A3D6E,color:#fff
-    style UI fill:#4A90A4,stroke:#2C5F6E,color:#fff
-```
-
-### Data Flow Example: Teaching Session
-
-```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#4A90A4', 'primaryTextColor': '#fff', 'primaryBorderColor': '#2C5F6E', 'lineColor': '#5A9A6E', 'secondaryColor': '#7B68A6', 'tertiaryColor': '#F5E6C8'}}}%%
-stateDiagram-v2
-    [*] --> Idle: App loaded
-    Idle --> Teaching: User asks "teach me"
-    
-    state Teaching {
-        [*] --> StartSession
-        StartSession --> AnalyzeGrid: Agent analyzes puzzle
-        AnalyzeGrid --> HighlightCells: Find next move
-        HighlightCells --> PlayVoice: Explain with TTS
-        PlayVoice --> WaitForUser: Show "Next Step" button
-        WaitForUser --> AnalyzeGrid: User clicks next
-        WaitForUser --> [*]: User clicks stop
-    }
-    
-    Teaching --> Idle: Session complete
-    Teaching --> Paused: User pauses
-    Paused --> Teaching: User resumes
-```
 
 ### Technology Stack
 
-- **Frontend**: React 19, Next.js 16, TypeScript 5
-- **UI/Animations**: Tailwind CSS 4, Framer Motion
-- **AI Integration**: CopilotKit 1.51 (AG-UI protocol)
-- **Agent Framework**: LangGraph 1.0, LangChain 1.2
-- **LLM Providers**: OpenAI, Azure OpenAI, Anthropic, Ollama
+- **Frontend**: Next.js 16, React 19, TypeScript, Tailwind CSS
+- **AI Framework**: CopilotKit 1.51, LangGraph 1.0, LangChain
+- **LLM Providers**: OpenAI, Anthropic Claude, Azure OpenAI, Ollama
+- **Voice**: ElevenLabs Text-to-Speech
 
-### Directory Structure
+**Detailed architecture guide:** [docs/AGENT_ARCHITECTURE_RECOMMENDATIONS.md](docs/AGENT_ARCHITECTURE_RECOMMENDATIONS.md)
 
-#### Frontend (Next.js + React)
-```
-src/
-├── app/
-│   ├── page.tsx              # Home page with game selector
-│   ├── api/
-│   │   ├── copilotkit/       # AG-UI protocol endpoint
-│   │   └── tts/              # Text-to-speech API
-│   └── sudoku/
-│       └── page.tsx          # Sudoku game with CopilotKit
-├── components/
-│   └── sudoku/
-│       ├── SudokuGame.tsx    # Main game component
-│       ├── SudokuBoard.tsx   # Game board
-│       ├── SudokuCell.tsx    # Individual cells
-│       ├── NumberPad.tsx     # Number input
-│       └── GameControls.tsx  # Controls & stats
-└── lib/
-    └── sudoku/
-        ├── types.ts          # TypeScript types
-        ├── generator.ts      # Puzzle generation
-        ├── solver.ts         # Solving algorithms
-        └── hooks.ts          # Game logic hooks
-```
+---
 
-#### Backend (Python + LangGraph)
-```
-agent/
-├── main.py               # LangGraph agent with CopilotKit
-├── llm_provider.py       # Multi-LLM abstraction layer
-├── sudoku_tools.py       # Sudoku analysis & teaching tools
-├── tts_service.py        # ElevenLabs TTS integration
-├── voice_tools.py        # Voice generation tools
-└── pyproject.toml        # Python dependencies
-```
-
-## Features
-
-### Sudoku Game (Fully Implemented)
-- **Complete Game Mechanics**
-  - Puzzle generation with 4 difficulty levels (Easy, Medium, Hard, Expert)
-  - Interactive board with cell selection and number placement
-  - Keyboard shortcuts and number pad input
-  - Undo/Redo functionality with move history
-  - Smart hint system with strategy-based suggestions
-  - Real-time validation and error detection
-  - Timer and mistake tracking
-
-- **AI Teaching Features**
-  - Interactive AI tutor with voice explanations (Eleven Labs TTS)
-  - Structured teaching sessions with progress tracking
-  - Visual cell highlighting with color-coded annotations
-  - Step-by-step puzzle solving guidance
-  - Strategy explanation (naked singles, hidden singles, etc.)
-  - Adaptive difficulty based on player level
-  - Pause/Resume/Stop controls for teaching sessions
-  
-- **Game Controls**
-  - Start screen with difficulty selection
-  - Pause/Resume game functionality
-  - Stop game and return to start
-  - New game with different difficulties
-  - Reset current puzzle
-
-### Chess Game (Planned)
-- Chess board with piece movement
-- Move validation and game rules
-- AI opponent with adjustable difficulty
-- Opening book and endgame tablebase
-- Interactive AI chess tutor
-- Position analysis and best move suggestions
-- Step-by-step opening theory lessons
-
-### AI Teaching Strategies
-
-The AI tutor teaches these Sudoku techniques:
-
-#### Beginner Level
-- **Naked Single**: Only one number can go in a cell
-- **Hidden Single**: A number can only go in one cell within a row/column/box
-
-#### Intermediate Level
-- **Naked Pair**: Two cells with same two candidates
-- **Pointing Pair**: Candidates pointing to eliminate others
-
-#### Advanced Level
-- **X-Wing**: Advanced elimination pattern
-- **Swordfish**: Complex pattern recognition
-- **XY-Wing**: Chain-based technique
-
-## Quick Start
+## Installation
 
 ### Prerequisites
-- Node.js 20+
-- Python 3.12+
-- OpenAI API key (or other LLM provider)
 
-### Installation
+- **Node.js** 20+ ([Download](https://nodejs.org/))
+- **Python** 3.12+ ([Download](https://www.python.org/))
+- **OpenAI API Key** (or other LLM provider) ([Get Key](https://platform.openai.com/api-keys))
 
-1. **Clone and install dependencies:**
+### Step 1: Clone and Install
+
 ```bash
+# Clone the repository
+git clone https://github.com/nitin27may/learnplay-ai.git
 cd learnplay-ai
+
+# Install all dependencies (frontend + backend)
 npm install
 ```
 
-2. **Install Python dependencies:**
-```bash
-cd agent
-uv sync
-cd ..
-```
+The `postinstall` script automatically sets up the Python environment using `uv`.
 
-3. **Configure LLM Provider:**
+### Step 2: Configure API Keys
 
-Edit `agent/.env` and add your API keys:
+Create or edit `agent/.env`:
+
 ```env
-LLM_PROVIDER=openai
-OPENAI_API_KEY=your-key-here
+# Required: LLM Provider
+OPENAI_API_KEY=sk-proj-your-key-here
 OPENAI_MODEL=gpt-4o-mini
 
-# Optional: ElevenLabs for voice teaching (free tier available)
+# Optional: Voice (get free key at elevenlabs.io)
 ELEVENLABS_API_KEY=your-elevenlabs-key
-ELEVENLABS_VOICE_ID=JBFqnCBsd6RMkjVDRZzb  # Optional, defaults to "George"
+ELEVENLABS_VOICE_ID=JBFqnCBsd6RMkjVDRZzb
 ```
 
-For other providers, see [LLM Configuration](#llm-configuration) below.
+**Other LLM Providers:**
 
-4. **Start the development servers:**
-```bash
-npm run dev
-```
+<details>
+<summary>Anthropic Claude</summary>
 
-This starts both:
-- Frontend (Next.js): http://localhost:3000
-- Agent (LangGraph): http://localhost:8123
-
-5. **Open the app:**
-Navigate to http://localhost:3000 and start playing!
-
-## How to Play Sudoku
-
-1. Click any cell to select it
-2. Use number pad or keyboard (1-9) to place numbers
-3. Press Delete/Backspace to clear a cell
-4. Use arrow keys to navigate
-5. Click "Hint" if you need help
-6. Chat with the AI tutor for strategy explanations!
-
-## LLM Configuration
-
-### OpenAI (Default)
 ```env
-LLM_PROVIDER=openai
-OPENAI_API_KEY=sk-...
-OPENAI_MODEL=gpt-4o-mini
+LLM_PROVIDER=anthropic
+ANTHROPIC_API_KEY=sk-ant-your-key
+ANTHROPIC_MODEL=claude-3-5-sonnet-20241022
 ```
+</details>
 
-### Azure OpenAI
+<details>
+<summary>Azure OpenAI</summary>
+
 ```env
 LLM_PROVIDER=azure-openai
 AZURE_OPENAI_API_KEY=your-key
-AZURE_OPENAI_ENDPOINT=https://your-endpoint.openai.azure.com/
+AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
 AZURE_OPENAI_DEPLOYMENT=gpt-4o
 ```
+</details>
 
-### Anthropic Claude
-```env
-LLM_PROVIDER=anthropic
-ANTHROPIC_API_KEY=sk-ant-...
-ANTHROPIC_MODEL=claude-3-5-sonnet-20241022
-```
+<details>
+<summary>Ollama (Local)</summary>
 
-### Ollama (Local)
 ```env
 LLM_PROVIDER=ollama
 OLLAMA_BASE_URL=http://localhost:11434
 OLLAMA_MODEL=llama3.1:8b
 ```
-
-## Voice Configuration (ElevenLabs)
-
-LearnPlay.ai uses ElevenLabs for natural voice explanations during teaching sessions.
-
-### Setup
-
-1. **Get an API key** from [ElevenLabs](https://elevenlabs.io/) (free tier available)
-2. **Add to `agent/.env`**:
-
-```env
-ELEVENLABS_API_KEY=your-elevenlabs-api-key
-ELEVENLABS_VOICE_ID=JBFqnCBsd6RMkjVDRZzb  # Optional, defaults to "George"
-```
-
-### Voice Settings
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| Voice ID | `JBFqnCBsd6RMkjVDRZzb` | George voice (free tier) |
-| Model | `eleven_multilingual_v2` | Multilingual support |
-| Stability | `0.5` | Voice consistency |
-| Similarity Boost | `0.75` | Voice clarity |
-| Output Format | MP3 44100Hz | High quality audio |
-
-### Available Voices
-
-You can use any ElevenLabs voice ID. Popular free-tier options:
-- `JBFqnCBsd6RMkjVDRZzb` - George (default, male)
-- `21m00Tcm4TlvDq8ikWAM` - Rachel (female)
-- `AZnzlk1XvdvUeBnXmlld` - Domi (female)
-
-### Fallback Behavior
-
-If ElevenLabs is not configured or unavailable:
-- The app gracefully falls back to browser's built-in Text-to-Speech
-- Teaching sessions continue without interruption
-- A message indicates TTS is unavailable
-
-## Development
-
-### Run in debug mode:
-```bash
-npm run dev:debug
-```
-
-### Build for production:
-```bash
-npm run build
-npm start
-```
-
-### Lint code:
-```bash
-npm run lint
-```
-
-## Scripts
-
-- `npm run dev` - Start both frontend and agent
-- `npm run dev:ui` - Start frontend only
-- `npm run dev:agent` - Start agent only
-- `npm run build` - Build for production
-- `npm run lint` - Lint code
-
-## Roadmap
-
-### Phase 1: Sudoku MVP (Complete)
-- [x] Basic Sudoku game
-- [x] LangGraph agent
-- [x] CopilotKit integration
-- [x] Multi-LLM support
-
-### Phase 2: Enhanced Teaching (In Progress)
-- [x] Teaching modes
-- [x] Strategy analysis
-- [ ] Generative UI for explanations
-- [ ] Progress tracking
-
-### Phase 3: Chess Implementation (Planned)
-- [ ] Chess game engine
-- [ ] Move validation
-- [ ] AI opponent
-- [ ] Chess teaching agent
-
-### Phase 4: Advanced Features (Planned)
-- [x] Voice mode (ElevenLabs TTS)
-- [ ] User accounts
-- [ ] Leaderboards
-- [ ] Mobile app
-
-## Contributing
-
-This is a learning project! Contributions welcome.
-
-## License
-
-MIT
-
-## Acknowledgments
-
-- CopilotKit for the amazing AI framework
-- LangChain/LangGraph for agent orchestration
-- The Sudoku and Chess communities for strategy documentation
+</details>
 
 ---
 
-Built with CopilotKit and LangGraph
+## Running the Application
+
+### Start Everything
+
+```bash
+npm run dev
+```
+
+This starts:
+- **Frontend**: [http://localhost:3000](http://localhost:3000)
+- **Agent Server**: [http://localhost:8123](http://localhost:8123)
+
+**That's it!** Open your browser and start learning Sudoku with AI guidance.
+
+### Run Separately (Optional)
+
+If you need to run frontend and backend separately:
+
+```bash
+# Terminal 1 - Frontend only
+npm run dev:ui
+
+# Terminal 2 - Agent server only
+npm run dev:agent
+```
+
+### Verify Setup
+
+After starting, you should see:
+
+```
+✓ Router agent registered
+✓ Sudoku agent registered
+✓ Chess agent registered
+```
+
+Navigate to [http://localhost:3000/sudoku](http://localhost:3000/sudoku) and click "Learn Sudoku Basics" to test the AI tutor.
+
+---
+
+## How to Use
+
+### Playing Sudoku
+
+1. **Start a Game**: Select difficulty (Easy/Medium/Hard/Expert)
+2. **Make Moves**: Click cells and use number pad (1-9) or keyboard
+3. **Get Help**: Click chat icon and ask: "Explain the basics" or "Give me a hint"
+4. **Learn Strategies**: Use "Learn Sudoku Basics" button for step-by-step teaching
+
+### AI Teaching Features
+
+- **Visual Highlights**: Agent highlights cells with different colors
+- **Voice Explanations**: Natural voice guidance (optional)
+- **Step-by-Step Lessons**: Progress through teaching sessions
+- **Strategy Analysis**: Learn techniques like Naked Singles, X-Wing, etc.
+
+**Complete usage guide:** [docs/SETUP.md](docs/SETUP.md)
+
+
+---
+
+## Documentation
+
+### For Users
+- **[Setup Guide](docs/SETUP.md)** - Detailed configuration, gameplay, and LLM providers
+- **[Sudoku Guide](docs/SUDOKU_GUIDE.md)** - Sudoku strategies and techniques
+- **[Chess Guide](docs/CHESS_GUIDE.md)** - Chess gameplay (coming soon)
+
+### For Developers
+- **[Quick Start](docs/QUICKSTART.md)** - Multi-agent setup and testing
+- **[Architecture](docs/AGENT_ARCHITECTURE_RECOMMENDATIONS.md)** - Multi-agent design patterns
+- **[AI Teaching System](docs/AI_TEACHING.md)** - Teaching patterns and behavior
+- **[Security](docs/SECURITY_AUDIT.md)** - Security hardening guide
+- **[Development Plan](PLAN.md)** - Roadmap and task tracking
+
+---
+
+## Roadmap
+
+### Completed
+- [x] Sudoku game with 4 difficulty levels
+- [x] Multi-agent architecture (Router, Sudoku, Chess)
+- [x] Interactive AI tutor with teaching sessions
+- [x] Voice mode (ElevenLabs TTS)
+- [x] Multi-LLM support (OpenAI, Claude, Azure, Ollama)
+- [x] Visual highlights and step-by-step guidance
+
+### In Progress
+- [ ] Security hardening (authentication, rate limiting)
+- [ ] Chess game implementation
+
+### Planned
+- [ ] User accounts and progress tracking
+- [ ] Achievement system and leaderboards
+- [ ] Mobile app
+- [ ] More games (Go, Checkers)
+
+**See [PLAN.md](PLAN.md) for detailed task tracking with 40+ tasks organized by phase.**
+
+---
+
+## Development
+
+```bash
+# Run both frontend and agent
+npm run dev
+
+# Run separately
+npm run dev:ui      # Frontend only (port 3000)
+npm run dev:agent   # Agent server only (port 8123)
+
+# Build for production
+npm run build
+
+# Lint code
+npm run lint
+```
+
+### Project Structure
+
+```
+learnplay-ai/
+├── src/                    # Frontend (Next.js + React)
+│   ├── app/               # Pages (home, sudoku, chess)
+│   ├── components/        # UI components
+│   └── lib/               # Game logic and utilities
+│
+├── agent/                 # Backend (Python + LangGraph)
+│   ├── agents/           # Specialized agents
+│   │   ├── router_agent.py
+│   │   ├── sudoku/       # Sudoku agent
+│   │   └── chess/        # Chess agent
+│   └── shared/           # Shared tools (voice, TTS, state)
+│
+└── docs/                  # Documentation
+```
+
+---
+
+## Contributing
+
+Contributions welcome! This is a learning project demonstrating:
+- Multi-agent AI architecture
+- CopilotKit integration
+- LangGraph agent orchestration
+- Interactive teaching systems
+
+Feel free to:
+- Report bugs
+- Suggest features
+- Submit pull requests
+- Share feedback
+
+---
+
+## License
+
+MIT License - see [LICENSE](LICENSE) file for details.
+
+---
+
+## Acknowledgments
+
+- **[CopilotKit](https://copilotkit.ai/)** - Amazing AI framework for building AI agents
+- **[LangChain](https://langchain.com/)** / **[LangGraph](https://langchain-ai.github.io/langgraph/)** - Agent orchestration
+- **Sudoku & Chess communities** - Strategy documentation and teaching methods
+
+---
+
+<div align="center">
+
+**Built with ❤️ using CopilotKit and LangGraph**
+
+[Star this repo](https://github.com/nitin27may/learnplay-ai) | [Read the docs](docs/) | [Report an issue](https://github.com/nitin27may/learnplay-ai/issues)
+
+</div>

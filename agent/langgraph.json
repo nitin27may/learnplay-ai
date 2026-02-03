@@ -4,6 +4,9 @@
   "dependencies": ["."],
   "package_manager": "uv",
   "graphs": {
+    "router_agent": "./agents/router_agent.py:graph",
+    "sudoku_agent": "./agents/sudoku/agent.py:graph",
+    "chess_agent": "./agents/chess/agent.py:graph",
     "sample_agent": "./main.py:graph"
   },
   "env": ".env"

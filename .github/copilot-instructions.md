@@ -4,29 +4,90 @@ This document provides guidance for AI assistants working on the LearnPlay.ai pr
 
 ## Project Overview
 
-LearnPlay.ai is an AI-powered educational gaming platform that teaches strategy games (Sudoku and Chess) through interactive tutoring. It uses:
+LearnPlay.ai is an AI-powered educational gaming platform that teaches strategy games (Sudoku and Chess) through interactive tutoring using a **Multi-Agent Architecture**.
 
 - **Frontend**: Next.js 16 with React 19, CopilotKit, and TailwindCSS
-- **Backend/Agent**: Python with LangGraph and LangChain
+- **Backend/Agents**: Python with LangGraph and LangChain
 - **AI Communication**: CopilotKit AG-UI Protocol
 - **Voice**: Eleven Labs TTS integration
 
-## Architecture
+## Multi-Agent Architecture
 
 ```
-Frontend (Next.js) ←→ CopilotKit ←→ LangGraph Agent (Python)
-                                          ↓
+Frontend (Next.js) ←→ CopilotKit Runtime ←→ Specialized Agents (Python)
+                                                  ↓
+                                    Router Agent (General queries)
+                                    Sudoku Agent (Sudoku specialist)
+                                    Chess Agent (Chess specialist)
+                                                  ↓
                                     LLM Provider (OpenAI/Anthropic/Ollama)
 ```
 
 ### Key Directories
 
-- `src/app/sudoku/page.tsx` - Main Sudoku page with frontend tools
+**Frontend:**
+- `src/app/sudoku/page.tsx` - Sudoku page with frontend tools (uses `sudoku_agent`)
+- `src/app/chess/page.tsx` - Chess page (uses `chess_agent`)
+- `src/app/page.tsx` - Home page (uses `router_agent`)
 - `src/components/sudoku/` - Sudoku game components
+- `src/components/chess/` - Chess game components
 - `src/components/TeachingProgress.tsx` - Teaching UI overlay
-- `agent/main.py` - LangGraph agent with system prompts
-- `agent/sudoku_tools.py` - Sudoku analysis tools
-- `agent/llm_provider.py` - Multi-LLM configuration
+
+**Backend (Multi-Agent):**
+- `agent/main.py` - Legacy entry point (backward compatibility)
+- `agent/langgraph.json` - Multi-agent configuration
+- `agent/shared/` - Shared tools (voice, TTS, base state)
+- `agent/agents/router_agent.py` - General assistant
+- `agent/agents/sudoku/` - Sudoku specialist agent
+- `agent/agents/chess/` - Chess specialist agent
+
+## Agent Responsibilities
+
+### Router Agent (`router_agent.py`)
+- **Purpose**: Handle general platform questions, greetings, game comparisons
+- **Used by**: Home page (`/`)
+- **Tools**: Basic utilities (weather)
+- **System Prompt**: ~50 lines, focused on navigation and encouragement
+- **State**: Minimal (proverbs, current_game)
+
+### Sudoku Agent (`agents/sudoku/agent.py`)
+- **Purpose**: Teach Sudoku rules, strategies, and solve puzzles
+- **Used by**: Sudoku page (`/sudoku`)
+- **Tools**: analyze_grid, validate_move, suggest_move, explain_basics, speak_message
+- **System Prompt**: ~80 lines, Sudoku-specific teaching patterns
+- **State**: sudoku_grid, teaching_active, teaching_current_step, etc.
+
+### Chess Agent (`agents/chess/agent.py`)
+- **Purpose**: Teach Chess rules, tactics, and provide move suggestions
+- **Used by**: Chess page (`/chess`)
+- **Tools**: analyze_position, suggest_move, validate_move, get_attacked_squares, speak_message
+- **System Prompt**: ~80 lines, Chess-specific teaching patterns
+- **State**: chess_fen, chess_game_mode, teaching_active, etc.
+
+## Agent File Structure
+
+```
+agent/agents/sudoku/
+  ├── __init__.py          # Package exports
+  ├── agent.py             # Agent definition + graph export
+  ├── prompts.py           # System prompts (SUDOKU_SYSTEM_PROMPT)
+  ├── state.py             # State schema (SudokuAgentState)
+  └── tools.py             # Sudoku-specific tools
+
+agent/agents/chess/
+  ├── __init__.py
+  ├── agent.py
+  ├── prompts.py           # Chess system prompts
+  ├── state.py             # ChessAgentState
+  └── tools.py             # Chess tools
+
+agent/shared/
+  ├── __init__.py
+  ├── base_state.py        # BaseTeachingState (inherited by all)
+  ├── voice_tools.py       # speak_message tool
+  ├── tts_service.py       # ElevenLabs integration
+  └── teaching_tools.py    # Common utilities
+```
 
 ## Important Patterns
 
@@ -101,22 +162,90 @@ class AgentState(CopilotKitState):
 ### 1. "Next Step" Button Not Working
 
 **Cause**: Agent tried to deliver all steps at once
-**Fix**: Ensure prompts specify ONE step per response
+**Fix**: Ensure agent prompts specify ONE step per response. Each agent has focused prompts.
 
 ### 2. Teaching Session Gets Stuck
 
 **Cause**: Agent didn't call `updateTeachingStep()` or `endTeaching()`
-**Fix**: Check agent response includes proper tool calls
+**Fix**: Check agent response includes proper tool calls. Review agent-specific prompts.
 
-### 3. Unicode Errors on Windows
+### 3. Wrong Agent Responding
+
+**Cause**: Frontend page using wrong agent name
+**Fix**: Verify `useCoAgent({ name: 'sudoku_agent' })` matches the page context
+
+### 4. Unicode Errors on Windows
 
 **Cause**: Emoji characters in Python print statements
-**Fix**: Use ASCII-only messages or wrap stdout with UTF-8 encoding
+**Fix**: Use ASCII-only messages or wrap stdout with UTF-8 encoding (already handled in tts_service.py)
 
-### 4. Agent Not Responding
+### 5. Agent Not Responding
 
 **Cause**: Missing API key or agent crashed
 **Fix**: Check `OPENAI_API_KEY` is set in `agent/.env`
+
+### 6. Shared Module Import Errors
+
+**Cause**: Python path not configured correctly in agents
+**Fix**: Agents use `sys.path.insert()` to add parent directory to path
+
+## Modifying Agents
+
+### Adding a New Sudoku Tool
+
+1. Add tool function to `agent/agents/sudoku/tools.py`
+2. Import and add to tools list in `agent/agents/sudoku/agent.py`
+3. Update `SUDOKU_SYSTEM_PROMPT` in `prompts.py` to document the tool
+4. Test on Sudoku page
+
+### Updating Agent Prompts
+
+**DO:**
+- Edit the specific agent's `prompts.py` file
+- Test only the affected game page
+- Keep prompts focused on single game domain
+
+**DON'T:**
+- Edit `main.py` system prompt (deprecated)
+- Mix game logic across agents
+- Update one agent without testing its specific page
+
+### Adding a New Game Agent
+
+Follow the pattern in `AGENT_ARCHITECTURE_RECOMMENDATIONS.md`:
+
+1. Create `agent/agents/newgame/` directory
+2. Create `agent.py`, `prompts.py`, `state.py`, `tools.py`
+3. Register in `langgraph.json` graphs section
+4. Add to CopilotKit runtime in `src/app/api/copilotkit/route.ts`
+5. Create frontend page with `useCoAgent({ name: 'newgame_agent' })`
+
+## Testing Multi-Agent Architecture
+
+### Testing Individual Agents
+
+```bash
+# Start the agent server
+cd agent
+langgraph dev
+
+# Test Sudoku agent
+curl http://localhost:8123/sudoku_agent/invoke -d '{"input": {"message": "explain basics"}}'
+
+# Test Chess agent  
+curl http://localhost:8123/chess_agent/invoke -d '{"input": {"message": "suggest a move"}}'
+```
+
+### Frontend Testing
+
+1. **Sudoku**: Navigate to `/sudoku` → Should use `sudoku_agent`
+2. **Chess**: Navigate to `/chess` → Should use `chess_agent`
+3. **Home**: Navigate to `/` → Should use `router_agent`
+
+Check browser console for agent routing:
+```
+[CopilotKit] Using agent: sudoku_agent
+```
 
 ## Development Commands
 
@@ -165,6 +294,7 @@ The project uses Playwright MCP for browser testing. To test:
 3. **Track teaching state** using startTeaching/updateTeachingStep/endTeaching
 4. **Test changes** with Playwright MCP after modifications
 5. **Handle errors gracefully** - teaching should degrade without voice/highlights
+6. **Never use emojis** in code, documentation, comments, or any project files - use descriptive text instead
 
 ## Files to Review for Context
 

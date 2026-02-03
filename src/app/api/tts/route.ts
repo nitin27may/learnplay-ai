@@ -12,9 +12,15 @@ export async function POST(request: NextRequest) {
     const voiceId = process.env.ELEVENLABS_VOICE_ID || 'JBFqnCBsd6RMkjVDRZzb';
     
     if (!apiKey) {
+      console.warn('⚠️ ELEVENLABS_API_KEY not configured - TTS disabled');
+      // Return success but with a message indicating TTS is disabled
       return NextResponse.json(
-        { error: 'Eleven Labs API key not configured' },
-        { status: 500 }
+        { 
+          success: false,
+          error: 'TTS not configured',
+          message: 'Voice synthesis is disabled. Set ELEVENLABS_API_KEY to enable.'
+        },
+        { status: 200 } // Changed to 200 so frontend doesn't treat it as a hard error
       );
     }
 

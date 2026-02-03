@@ -110,6 +110,17 @@ export function useVoiceMode() {
         return;
       }
 
+      // Check if response is JSON (error message) or audio blob
+      const contentType = response.headers.get('content-type');
+      if (contentType?.includes('application/json')) {
+        const result = await response.json();
+        if (!result.success) {
+          console.warn('TTS not configured:', result.message);
+          speakWithBrowserTTS(text);
+          return;
+        }
+      }
+
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
       

@@ -1,0 +1,17 @@
+{
+  "github.copilot.chat.terminalChatLocation": "terminal",
+  "github.copilot.chat.runCommand.enabled": true,
+  "chat.commandCenter.enabled": true,
+  "chat.agent.enabled": true,
+  "chat.agent.maxRequests": 900,
+  "github.copilot.chat.agent.runTasks": true,
+  "github.copilot.chat.agent.autoFix": true,
+  "chat.tools.terminal.autoApprove": true,
+  "chat.tools.global.autoApprove": true,
+  "chat.tools.autoApprove": true,
+  "chat.editSession.autoApprove": "always",
+  "chat.participants.autoApprove": ["github.copilot.terminal"],
+  "github.copilot.advanced": {
+    "agent.autoApprove": true
+  }
+}
