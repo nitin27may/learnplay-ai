@@ -12,36 +12,28 @@ const serviceAdapter = new ExperimentalEmptyAdapter();
 const deploymentUrl = process.env.LANGGRAPH_DEPLOYMENT_URL || "http://127.0.0.1:8123";
 const langsmithApiKey = process.env.LANGSMITH_API_KEY || "";
 
+// Helper to create LangGraph agents (type assertion to handle internal CopilotKit type mismatches)
+const createAgent = (graphId: string) => new LangGraphAgent({
+  deploymentUrl,
+  graphId,
+  langsmithApiKey,
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+}) as any;
+
 // Create the CopilotRuntime with multiple specialized agents
 const runtime = new CopilotRuntime({
   agents: {
     // Router agent for general queries (home page)
-    router_agent: new LangGraphAgent({
-      deploymentUrl,
-      graphId: "router_agent",
-      langsmithApiKey,
-    }),
+    router_agent: createAgent("router_agent"),
     
     // Sudoku specialist agent
-    sudoku_agent: new LangGraphAgent({
-      deploymentUrl,
-      graphId: "sudoku_agent",
-      langsmithApiKey,
-    }),
+    sudoku_agent: createAgent("sudoku_agent"),
     
     // Chess specialist agent
-    chess_agent: new LangGraphAgent({
-      deploymentUrl,
-      graphId: "chess_agent",
-      langsmithApiKey,
-    }),
+    chess_agent: createAgent("chess_agent"),
     
     // Legacy agent for backward compatibility
-    sample_agent: new LangGraphAgent({
-      deploymentUrl,
-      graphId: "sample_agent",
-      langsmithApiKey,
-    }),
+    sample_agent: createAgent("sample_agent"),
   },
 });
 
@@ -55,32 +47,17 @@ export const POST = async (req: NextRequest) => {
   console.log(`[CopilotKit] Routing to agent: ${agentName}`);
   
   // Select the correct agent based on the request
+  // Using createAgent helper to handle internal CopilotKit type mismatches
   let selectedAgent;
   if (agentName === 'sudoku_agent') {
-    selectedAgent = new LangGraphAgent({
-      deploymentUrl,
-      graphId: "sudoku_agent",
-      langsmithApiKey,
-    });
+    selectedAgent = createAgent("sudoku_agent");
   } else if (agentName === 'chess_agent') {
-    selectedAgent = new LangGraphAgent({
-      deploymentUrl,
-      graphId: "chess_agent",
-      langsmithApiKey,
-    });
+    selectedAgent = createAgent("chess_agent");
   } else if (agentName === 'sample_agent') {
-    selectedAgent = new LangGraphAgent({
-      deploymentUrl,
-      graphId: "sample_agent",
-      langsmithApiKey,
-    });
+    selectedAgent = createAgent("sample_agent");
   } else {
     // Default to router_agent
-    selectedAgent = new LangGraphAgent({
-      deploymentUrl,
-      graphId: "router_agent",
-      langsmithApiKey,
-    });
+    selectedAgent = createAgent("router_agent");
   }
   
   // Create a runtime with the selected agent as "default"

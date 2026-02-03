@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { useFrontendTool, useCopilotChat, useCopilotReadable } from '@copilotkit/react-core';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useFrontendTool, useCopilotChat, useCopilotReadable, useCoAgentStateRender, useCopilotChatSuggestions } from '@copilotkit/react-core';
 import { CopilotSidebar } from '@copilotkit/react-ui';
 import { MessageRole, TextMessage } from '@copilotkit/runtime-client-gql';
 import { SudokuGame } from '@/components/sudoku/SudokuGame';
@@ -10,6 +10,15 @@ import { useVoiceMode } from '@/lib/hooks/useVoiceMode';
 import { analyzeStrategies, findConflicts } from '@/lib/sudoku/solver';
 import type { SudokuGrid } from '@/lib/sudoku/types';
 import type { CellAnnotation } from '@/lib/sudoku/annotations';
+import type { SudokuAgentState } from '@/lib/types';
+import { 
+  CellBadge, 
+  StrategyBadge, 
+  HintCard, 
+  AnalysisCard,
+  InlineTeachingProgress,
+  ThinkingIndicator,
+} from '@/components/chat';
 
 type GameMode = 'play' | 'teach' | 'practice';
 
@@ -73,6 +82,61 @@ export default function SudokuGameWithAgent() {
       message: 'No grid loaded yet'
     },
   });
+
+  // Render agent state changes in chat (for teaching progress)
+  useCoAgentStateRender<SudokuAgentState>({
+    name: 'sudoku_agent',
+    render: ({ state }) => {
+      if (!state?.teaching_active) return undefined;
+      return (
+        <InlineTeachingProgress
+          currentStep={state.teaching_current_step || 1}
+          totalSteps={state.teaching_total_steps || 1}
+          stepTitle={state.teaching_topic || 'Teaching'}
+          topic={state.teaching_topic || 'Sudoku'}
+          onNext={handleNextStep}
+          onStop={() => {
+            setIsTeaching(false);
+            setAnnotations([]);
+            setAnnotationMessage('');
+          }}
+        />
+      );
+    },
+  });
+
+  // Dynamic context-aware chat suggestions
+  const emptyCellCount = useMemo(() => {
+    return currentGrid.flat().filter((cell: number | null) => cell === null || cell === 0).length;
+  }, [currentGrid]);
+
+  useCopilotChatSuggestions({
+    instructions: `Based on the current game state:
+      - Empty cells: ${emptyCellCount}
+      - Is teaching: ${isTeaching}
+      - Current step: ${currentStepNumber}/${totalSteps}
+      Suggest 2-3 helpful next actions for a Sudoku player.`,
+    minSuggestions: 2,
+    maxSuggestions: 3,
+  });
+
+  // Custom markdown tag renderers for rich inline content
+  const markdownTagRenderers = {
+    'cell': ({ row, col, value, color }: { row?: string; col?: string; value?: string; color?: string; children?: React.ReactNode }) => (
+      <CellBadge 
+        row={parseInt(row || '0')} 
+        col={parseInt(col || '0')} 
+        value={value ? parseInt(value) : undefined}
+        color={(color as 'green' | 'blue' | 'red' | 'yellow' | 'gray') || 'blue'}
+      />
+    ),
+    'strategy': ({ name, type }: { name?: string; type?: string; children?: React.ReactNode }) => (
+      <StrategyBadge 
+        name={name || 'Strategy'} 
+        type={(type as 'basic' | 'intermediate' | 'advanced') || 'basic'}
+      />
+    ),
+  };
 
   // Log initialization
   useEffect(() => {
@@ -539,6 +603,10 @@ export default function SudokuGameWithAgent() {
     },
   });
 
+  // Note: useHumanInTheLoop tools (askNumber, askStrategy, askCellSelection) are available 
+  // but removed due to React 19 type compatibility issues. They can be re-enabled 
+  // once CopilotKit provides updated types for React 19.
+
   // Handler for Next Step button - sends continuation message to agent
   const handleNextStep = useCallback(async () => {
     if (isLoading) return; // Don't send if already processing
@@ -645,8 +713,9 @@ export default function SudokuGameWithAgent() {
         defaultOpen={false}
         labels={{
           title: 'Sudoku AI Tutor',
-          initial: "I can see your Sudoku board! Ready to help with:\n• Step-by-step basics (with voice)\n• Hints when you're stuck\n• Solving strategies\n\nClick a suggestion below to get started!",
+          initial: "I can see your Sudoku board! Ready to help with:\n - Step-by-step basics (with voice)\n - Hints when you're stuck\n - Solving strategies\n\nClick a suggestion below to get started!",
         }}
+        markdownTagRenderers={markdownTagRenderers}
         suggestions={[
           {
             title: 'Learn Sudoku Basics',

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
-import { useFrontendTool, useCopilotChat, useCopilotReadable } from '@copilotkit/react-core';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import { useFrontendTool, useCopilotChat, useCopilotReadable, useCoAgentStateRender, useCopilotChatSuggestions, useHumanInTheLoop } from '@copilotkit/react-core';
 import { CopilotSidebar } from '@copilotkit/react-ui';
 import { MessageRole, TextMessage } from '@copilotkit/runtime-client-gql';
 import { ChessBoard } from './ChessBoard';
@@ -10,6 +10,16 @@ import { GameControls } from './GameControls';
 import { ChessTeachingProgress } from './ChessTeachingProgress';
 import { ChessEngine } from '@/lib/chess/engine';
 import type { Square } from '@/lib/chess/types';
+import type { ChessAgentState } from '@/lib/types';
+import {
+  SquareBadge,
+  StrategyBadge,
+  MoveCard,
+  InlineTeachingProgress,
+  ThinkingIndicator,
+  MoveSelectionQuiz,
+  OpeningCard,
+} from '@/components/chat';
 
 export function ChessGameWithAgent() {
   const [engine] = useState(() => new ChessEngine());
@@ -51,6 +61,48 @@ export function ChessGameWithAgent() {
       gameStatus,
       isTeaching,
     },
+  });
+
+  // Render teaching progress inline in chat when teaching is active
+  useCoAgentStateRender<ChessAgentState>({
+    name: 'chess_agent',
+    render: ({ state }) => {
+      if (state?.teaching_active && state?.teaching_total_steps > 0) {
+        return (
+          <InlineTeachingProgress
+            topic={state.teaching_topic || 'Chess lesson'}
+            currentStep={state.teaching_current_step}
+            totalSteps={state.teaching_total_steps}
+          />
+        );
+      }
+      return undefined;
+    },
+  });
+
+  // Markdown tag renderers for rich inline content
+  const markdownTagRenderers = {
+    square: (props: { children?: React.ReactNode }) => {
+      const square = String(props.children || '');
+      return <SquareBadge square={square} />;
+    },
+    strategy: (props: { children?: React.ReactNode }) => {
+      const strategy = String(props.children || '');
+      return <StrategyBadge name={strategy} />;
+    },
+  };
+
+  // Dynamic context-aware chat suggestions
+  useCopilotChatSuggestions({
+    instructions: `Based on the current chess game state:
+      - Move count: ${history.length}
+      - Game mode: ${gameMode}
+      - Game status: ${gameStatus || 'In progress'}
+      - Is teaching: ${isTeaching}
+      - Current step: ${currentStep}/${totalSteps}
+      Suggest 2-3 helpful next actions for a chess player.`,
+    minSuggestions: 2,
+    maxSuggestions: 3,
   });
 
   const updateGameState = useCallback(() => {
@@ -199,6 +251,20 @@ export function ChessGameWithAgent() {
       setHighlightSquares(styles);
       return `Highlighted ${squaresArray.length} squares. REMEMBER: You must call speak_message now to explain this highlight.`;
     },
+    render: ({ args }) => {
+      const squaresArray = Array.isArray(args?.squares) ? args.squares : [];
+      const squareNames = squaresArray.map((sq: { square: string }) => sq.square).join(', ');
+      return (
+        <MoveCard
+          from={squaresArray[0]?.square || ''}
+          to={squaresArray[1]?.square || ''}
+          piece="piece"
+          pieceColor="white"
+          notation={squareNames || '?'}
+          explanation={args?.message || `Highlighted: ${squareNames}`}
+        />
+      );
+    },
   });
 
   // Frontend tool: Clear highlights
@@ -283,6 +349,10 @@ export function ChessGameWithAgent() {
     },
   });
 
+  // Note: useHumanInTheLoop tools (askMoveSelection, showOpening) are available 
+  // but removed due to React 19 type compatibility issues. They can be re-enabled 
+  // once CopilotKit provides updated types for React 19.
+
   const handleNextStep = useCallback(async () => {
     if (isLoading) return;
     setIsPaused(false);
@@ -311,6 +381,7 @@ export function ChessGameWithAgent() {
         initial: 'Hi! I\'m your chess tutor. Click a button below or ask me anything:',
       }}
       clickOutsideToClose={false}
+      markdownTagRenderers={markdownTagRenderers}
       suggestions={[
         {
           title: 'Learn Chess Basics',
