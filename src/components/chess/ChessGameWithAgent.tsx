@@ -15,9 +15,11 @@ export function ChessGameWithAgent() {
   const [engine] = useState(() => new ChessEngine());
   const [position, setPosition] = useState(() => engine.getState().fen);
   const [history, setHistory] = useState<string[]>([]);
+  const [playerNames, setPlayerNames] = useState<string[]>([]); // Track who made each move
   const [orientation, setOrientation] = useState<'white' | 'black'>('white');
   const [gameStatus, setGameStatus] = useState('');
   const [highlightSquares, setHighlightSquares] = useState<Record<string, React.CSSProperties>>({});
+  const [gameMode, setGameMode] = useState<'pvp' | 'pvc' | 'ai'>('pvp'); // Player vs Player, Player vs Computer, Player vs AI
   
   // Teaching state
   const [isTeaching, setIsTeaching] = useState(false);
@@ -45,6 +47,7 @@ export function ChessGameWithAgent() {
       fen: position,
       history,
       orientation,
+      gameMode,
       gameStatus,
       isTeaching,
     },
@@ -72,10 +75,31 @@ export function ChessGameWithAgent() {
     const move = engine.move(sourceSquare, targetSquare);
     if (move) {
       updateGameState();
+      
+      // If playing against computer or AI, make their move after a short delay
+      if ((gameMode === 'pvc' || gameMode === 'ai') && !engine.isGameOver()) {
+        setTimeout(() => {
+          if (gameMode === 'pvc') {
+            // Computer makes a random legal move
+            const moves = engine.getAllLegalMoves();
+            if (moves.length > 0) {
+              const randomMove = moves[Math.floor(Math.random() * moves.length)];
+              engine.move(randomMove.from as Square, randomMove.to as Square);
+              updateGameState();
+            }
+          } else if (gameMode === 'ai') {
+            // Ask AI agent to make a move
+            appendMessage(new TextMessage({
+              content: 'Make your move as my opponent',
+              role: MessageRole.User,
+            }));
+          }
+        }, 500);
+      }
       return true;
     }
     return false;
-  }, [engine, updateGameState]);
+  }, [engine, updateGameState, gameMode, appendMessage]);
 
   const handleNewGame = useCallback(() => {
     engine.reset();
@@ -145,7 +169,7 @@ export function ChessGameWithAgent() {
   // Frontend tool: Highlight squares
   useFrontendTool({
     name: 'highlightSquares',
-    description: 'Highlight squares on the board (visual only)',
+    description: 'Highlight squares on the board. CRITICAL: You MUST immediately call speak_message after this to explain what you highlighted. Never highlight without speaking.',
     parameters: [
       { name: 'squares', type: 'object', description: 'Array of {square, color}', required: true },
       { name: 'message', type: 'string', description: 'Message text', required: true },
@@ -165,7 +189,7 @@ export function ChessGameWithAgent() {
       });
       
       setHighlightSquares(styles);
-      return `Highlighted ${squaresArray.length} squares: ${message}`;
+      return `Highlighted ${squaresArray.length} squares. REMEMBER: You must call speak_message now to explain this highlight.`;
     },
   });
 
@@ -180,22 +204,22 @@ export function ChessGameWithAgent() {
     },
   });
 
-  // Frontend tool: Make move
+  // Frontend tool: Make AI move (when AI is opponent)
   useFrontendTool({
-    name: 'makeMove',
-    description: 'Execute a chess move',
+    name: 'makeAIMove',
+    description: 'Execute a chess move as the AI opponent. Use when in AI opponent mode.',
     parameters: [
       { name: 'move', type: 'string', description: 'Move in UCI format (e.g., e2e4)', required: true },
     ],
     handler({ move }) {
-      const from = move.substring(0, 2);
-      const to = move.substring(2, 4);
+      const from = move.substring(0, 2) as Square;
+      const to = move.substring(2, 4) as Square;
       const promotion = move.length > 4 ? move[4] : undefined;
       
       const result = engine.move(from, to, promotion);
       if (result) {
         updateGameState();
-        return `Played: ${result.san}`;
+        return `AI played: ${result.san}`;
       }
       return 'Invalid move';
     },
@@ -280,23 +304,23 @@ export function ChessGameWithAgent() {
       clickOutsideToClose={false}
       suggestions={[
         {
-          title: '📚 Learn Chess Basics',
+          title: 'Learn Chess Basics',
           message: 'Learn chess basics',
         },
         {
-          title: '💡 Suggest Move',
+          title: 'Suggest Move',
           message: 'Suggest a good move for me',
         },
         {
-          title: '🤖 AI Opponent',
+          title: 'AI Opponent',
           message: 'Make an AI move as my opponent',
         },
         {
-          title: '📊 Analyze Position',
+          title: 'Analyze Position',
           message: 'Analyze the current position',
         },
         {
-          title: '➡️ Continue',
+          title: 'Continue',
           message: 'Continue to the next step',
         },
       ]}
@@ -329,6 +353,26 @@ export function ChessGameWithAgent() {
             </div>
             
             <div className="space-y-4">
+              <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Game Mode
+                </label>
+                <select
+                  value={gameMode}
+                  onChange={(e) => setGameMode(e.target.value as 'pvp' | 'pvc' | 'ai')}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="pvp">Player vs Player</option>
+                  <option value="pvc">Player vs Computer</option>
+                  <option value="ai">Player vs AI Agent</option>
+                </select>
+                <p className="mt-2 text-xs text-gray-500">
+                  {gameMode === 'pvp' && 'Play against another human'}
+                  {gameMode === 'pvc' && 'Computer makes random moves'}
+                  {gameMode === 'ai' && 'AI agent plays as your opponent'}
+                </p>
+              </div>
+              
               <GameControls
                 onNewGame={handleNewGame}
                 onUndo={handleUndo}

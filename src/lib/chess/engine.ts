@@ -30,6 +30,15 @@ export class ChessEngine {
     return moves.map(m => m.to);
   }
 
+  getAllLegalMoves(): Array<{ from: string; to: string; san: string }> {
+    const moves = this.game.moves({ verbose: true });
+    return moves.map(m => ({ from: m.from, to: m.to, san: m.san }));
+  }
+
+  isGameOver(): boolean {
+    return this.game.isGameOver();
+  }
+
   isLegalMove(from: Square, to: Square): boolean {
     const moves = this.getLegalMoves(from);
     return moves.includes(to);
