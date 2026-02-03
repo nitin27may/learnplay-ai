@@ -18,6 +18,21 @@ const confidenceColors = {
   low: 'bg-orange-100 text-orange-800',
 };
 
+// Convert technical strategy names to user-friendly labels
+const formatStrategyName = (strategy: string): string => {
+  const strategyMap: Record<string, string> = {
+    'naked_single': 'Naked Single',
+    'hidden_single_row': 'Hidden Single (Row)',
+    'hidden_single_col': 'Hidden Single (Column)',
+    'hidden_single_box': 'Hidden Single (Box)',
+    'naked_pair': 'Naked Pair',
+    'hidden_pair': 'Hidden Pair',
+    'pointing_pair': 'Pointing Pair',
+    'box_line_reduction': 'Box-Line Reduction',
+  };
+  return strategyMap[strategy] || strategy.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+};
+
 export function HintCard({
   cell,
   value,
@@ -28,12 +43,20 @@ export function HintCard({
   onExplainMore,
 }: HintCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const [applied, setApplied] = useState(false);
   const displayExplanation = expanded ? explanation : `${explanation.slice(0, 100)}${explanation.length > 100 ? '...' : ''}`;
+
+  const handleApply = () => {
+    if (onApply && !applied) {
+      onApply();
+      setApplied(true);
+    }
+  };
 
   return (
     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 my-2" role="article" aria-label="Hint suggestion">
       <div className="flex items-center justify-between mb-2">
-        <span className="font-semibold text-blue-800">{strategy}</span>
+        <span className="font-semibold text-blue-800">{formatStrategyName(strategy)}</span>
         <span className={`px-2 py-1 text-xs rounded-full ${confidenceColors[confidence]}`}>
           {confidence} confidence
         </span>
@@ -70,10 +93,24 @@ export function HintCard({
       <div className="flex gap-2">
         {onApply && (
           <button
-            onClick={onApply}
-            className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            onClick={handleApply}
+            disabled={applied}
+            className={`flex-1 px-4 py-2 rounded-md transition font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center gap-2 ${
+              applied
+                ? 'bg-green-600 text-white cursor-default focus:ring-green-500'
+                : 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500'
+            }`}
           >
-            Apply to Board
+            {applied ? (
+              <>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                Applied
+              </>
+            ) : (
+              'Apply to Board'
+            )}
           </button>
         )}
         {onExplainMore && (

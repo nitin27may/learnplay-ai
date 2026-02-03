@@ -15,3 +15,4 @@ export { CellSelectionQuiz } from './CellSelectionQuiz';
 export { MoveSelectionQuiz } from './MoveSelectionQuiz';
 export { OpeningCard } from './OpeningCard';
 export { ActionButtonGroup } from './ActionButtonGroup';
+export { InfoCard } from './InfoCard';

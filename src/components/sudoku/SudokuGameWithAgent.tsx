@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { useFrontendTool, useCopilotChat, useCopilotReadable, useCoAgentStateRender, useCopilotChatSuggestions } from '@copilotkit/react-core';
+import { useFrontendTool, useCopilotChat, useCopilotReadable, useCoAgentStateRender, useCopilotChatSuggestions, useRenderToolCall } from '@copilotkit/react-core';
 import { CopilotSidebar } from '@copilotkit/react-ui';
 import { MessageRole, TextMessage } from '@copilotkit/runtime-client-gql';
 import { SudokuGame } from '@/components/sudoku/SudokuGame';
@@ -18,6 +18,8 @@ import {
   AnalysisCard,
   InlineTeachingProgress,
   ThinkingIndicator,
+  InfoCard,
+  ActionButtonGroup,
 } from '@/components/chat';
 
 type GameMode = 'play' | 'teach' | 'practice';
@@ -350,6 +352,62 @@ export default function SudokuGameWithAgent() {
       
       console.log('[Solver] Found move:', { row: cell.row, col: cell.col, value: bestMove.value, strategy: bestMove.strategy });
       
+      // Create highlights for ALL cells in row, column, and box to show constraints
+      const highlights: CellAnnotation[] = [];
+      
+      // Add row highlights (light yellow) - ALL cells in the row
+      for (let c = 0; c < 9; c++) {
+        if (c !== cell.col) {
+          highlights.push({
+            row: cell.row,
+            col: c,
+            type: 'highlight',
+            color: 'yellow',
+          });
+        }
+      }
+      
+      // Add column highlights (light yellow) - ALL cells in the column
+      for (let r = 0; r < 9; r++) {
+        if (r !== cell.row) {
+          highlights.push({
+            row: r,
+            col: cell.col,
+            type: 'highlight',
+            color: 'yellow',
+          });
+        }
+      }
+      
+      // Add box highlights (light yellow) - ALL cells in the 3x3 box
+      const boxStartRow = Math.floor(cell.row / 3) * 3;
+      const boxStartCol = Math.floor(cell.col / 3) * 3;
+      for (let r = boxStartRow; r < boxStartRow + 3; r++) {
+        for (let c = boxStartCol; c < boxStartCol + 3; c++) {
+          if (r !== cell.row || c !== cell.col) {
+            // Check if not already highlighted (row/col intersection)
+            const alreadyHighlighted = highlights.some(h => h.row === r && h.col === c);
+            if (!alreadyHighlighted) {
+              highlights.push({
+                row: r,
+                col: c,
+                type: 'highlight',
+                color: 'yellow',
+              });
+            }
+          }
+        }
+      }
+      
+      // Add target cell LAST so it appears on top with green highlight and value label
+      highlights.push({
+        row: cell.row,
+        col: cell.col,
+        type: 'highlight',
+        color: 'green',
+        label: String(bestMove.value)
+      });
+      
       return JSON.stringify({
         has_suggestion: true,
         row: cell.row,
@@ -357,15 +415,54 @@ export default function SudokuGameWithAgent() {
         value: bestMove.value,
         strategy: bestMove.strategy,
         explanation: explanation,
-        // Pre-formatted cells for highlightCells
-        highlightCells: [{
-          row: cell.row,
-          col: cell.col,
-          type: 'highlight',
-          color: 'green',
-          label: String(bestMove.value)
-        }]
+        // Pre-formatted cells for highlightCells with constraints highlighted
+        highlightCells: highlights
       });
+    },
+    render: ({ result, status }) => {
+      // Show loading indicator while executing
+      if (status === 'executing') {
+        return <ThinkingIndicator message="Finding best move..." />;
+      }
+      
+      if (!result) {
+        return <div className="text-sm text-gray-500 italic">No suggestion available</div>;
+      }
+      
+      try {
+        const data = typeof result === 'string' ? JSON.parse(result) : result;
+        
+        if (data.has_suggestion) {
+          // Apply visual highlights to the board
+          if (data.highlightCells && data.highlightCells.length > 0) {
+            setAnnotations(data.highlightCells);
+            setAnnotationMessage(data.explanation || '');
+          }
+          
+          return (
+            <HintCard
+              cell={{ row: data.row, col: data.col }}
+              value={data.value}
+              strategy={data.strategy || 'Suggestion'}
+              explanation={data.explanation || 'Try this move'}
+              confidence="high"
+              onApply={() => {
+                console.log('[HintCard] Applying hint:', data);
+                setExternalCellUpdate({
+                  row: data.row,
+                  col: data.col,
+                  value: data.value,
+                  timestamp: Date.now()
+                });
+              }}
+            />
+          );
+        }
+        return <div className="text-sm text-gray-500 italic">No moves available</div>;
+      } catch (e) {
+        console.error('Failed to render getNextSolvingMove:', e);
+        return <div className="text-sm text-red-500 italic">Error loading suggestion</div>;
+      }
     },
   });
 
@@ -606,6 +703,197 @@ export default function SudokuGameWithAgent() {
   // Note: useHumanInTheLoop tools (askNumber, askStrategy, askCellSelection) are available 
   // but removed due to React 19 type compatibility issues. They can be re-enabled 
   // once CopilotKit provides updated types for React 19.
+
+  // Render backend tool calls with custom UI components
+  useRenderToolCall({
+    name: 'explain_sudoku_basics',
+    render: ({ status, result }) => {
+      if (status === 'executing') {
+        return <ThinkingIndicator message="Preparing explanation..." />;
+      }
+      
+      if (status === 'complete' && result) {
+        try {
+          const data = typeof result === 'string' ? JSON.parse(result) : result;
+          const stepTitles: Record<string, string> = {
+            'box': '3×3 Box Rule',
+            'row': 'Row Rule',
+            'column': 'Column Rule',
+            'all': 'Summary'
+          };
+          const stepIcons: Record<string, string> = {
+            'box': '▦',
+            'row': '⬌',
+            'column': '⬍',
+            'all': '✓'
+          };
+          
+          return (
+            <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 my-2">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-2xl">{stepIcons[data.step] || '📚'}</span>
+                <h3 className="font-bold text-indigo-900">
+                  {stepTitles[data.step] || 'Sudoku Basics'}
+                </h3>
+              </div>
+              <p className="text-sm text-indigo-900 mb-3">{data.message || data.explanation}</p>
+              {data.example_cells && data.example_cells.length > 0 && (
+                <div className="mt-2 p-2 bg-indigo-100 rounded">
+                  <p className="text-xs text-indigo-700">
+                    Watch the highlighted cells on the board to see this rule in action!
+                  </p>
+                </div>
+              )}
+            </div>
+          );
+        } catch (e) {
+          console.error('Failed to parse explain_sudoku_basics result:', e);
+        }
+      }
+      return null;
+    }
+  });
+
+  useRenderToolCall({
+    name: 'suggest_next_move',
+    render: ({ status, args, result }) => {
+      if (status === 'executing') {
+        return <ThinkingIndicator message="Analyzing puzzle..." />;
+      }
+      
+      if (status === 'complete' && result) {
+        try {
+          const data = typeof result === 'string' ? JSON.parse(result) : result;
+          if (data.has_suggestion) {
+            return (
+              <HintCard
+                cell={{ row: data.row, col: data.col }}
+                value={data.value}
+                strategy={data.strategy || 'Suggestion'}
+                explanation={data.explanation || 'Try this move'}
+                confidence="high"
+                onApply={() => {
+                  setExternalCellUpdate({
+                    row: data.row,
+                    col: data.col,
+                    value: data.value,
+                    timestamp: Date.now()
+                  });
+                }}
+              />
+            );
+          }
+        } catch (e) {
+          console.error('Failed to parse suggest_next_move result:', e);
+        }
+      }
+      return null;
+    }
+  });
+
+  useRenderToolCall({
+    name: 'analyze_sudoku_grid',
+    render: ({ status, result }) => {
+      if (status === 'executing') {
+        return <ThinkingIndicator message="Analyzing grid..." />;
+      }
+      
+      if (status === 'complete' && result) {
+        try {
+          const data = typeof result === 'string' ? JSON.parse(result) : result;
+          if (data.strategies && Array.isArray(data.strategies)) {
+            return (
+              <AnalysisCard
+                title="Grid Analysis"
+                items={data.strategies.map((s: any) => ({
+                  label: s.strategy || 'Strategy',
+                  value: s.description || '',
+                  color: s.difficulty === 'easy' ? 'green' : 
+                         s.difficulty === 'medium' ? 'yellow' : 'red'
+                }))}
+              />
+            );
+          }
+        } catch (e) {
+          console.error('Failed to parse analyze_sudoku_grid result:', e);
+        }
+      }
+      return null;
+    }
+  });
+
+  useRenderToolCall({
+    name: 'explain_strategy',
+    render: ({ status, result }) => {
+      if (status === 'executing') {
+        return <ThinkingIndicator message="Explaining strategy..." />;
+      }
+      
+      if (status === 'complete' && result) {
+        try {
+          const data = typeof result === 'string' ? JSON.parse(result) : result;
+          return (
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 my-2">
+              <div className="flex items-center gap-2 mb-3">
+                <svg className="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+                </svg>
+                <h3 className="font-bold text-purple-900">
+                  {data.strategy_name || 'Strategy Explanation'}
+                </h3>
+              </div>
+              <div className="space-y-2 text-sm text-purple-900">
+                <p className="font-medium">{data.description || data.explanation}</p>
+                {data.when_to_use && (
+                  <div className="mt-2 p-2 bg-purple-100 rounded">
+                    <p className="text-xs font-semibold mb-1">When to use:</p>
+                    <p className="text-xs">{data.when_to_use}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        } catch (e) {
+          console.error('Failed to parse explain_strategy result:', e);
+        }
+      }
+      return null;
+    }
+  });
+
+  useRenderToolCall({
+    name: 'validate_move',
+    render: ({ status, args, result }) => {
+      if (status === 'executing') {
+        return <ThinkingIndicator message="Validating move..." />;
+      }
+      
+      if (status === 'complete' && result) {
+        try {
+          const data = typeof result === 'string' ? JSON.parse(result) : result;
+          const isValid = data.is_valid || data.valid;
+          return (
+            <div className={`rounded-lg p-3 ${isValid ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+              <div className="flex items-center gap-2">
+                <span className="text-lg">{isValid ? '✓' : '✗'}</span>
+                <span className={`font-semibold ${isValid ? 'text-green-800' : 'text-red-800'}`}>
+                  {isValid ? 'Valid move!' : 'Invalid move'}
+                </span>
+              </div>
+              {data.message && (
+                <p className={`mt-1 text-sm ${isValid ? 'text-green-700' : 'text-red-700'}`}>
+                  {data.message}
+                </p>
+              )}
+            </div>
+          );
+        } catch (e) {
+          console.error('Failed to parse validate_move result:', e);
+        }
+      }
+      return null;
+    }
+  });
 
   // Handler for Next Step button - sends continuation message to agent
   const handleNextStep = useCallback(async () => {

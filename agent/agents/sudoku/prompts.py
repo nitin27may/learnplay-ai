@@ -69,7 +69,7 @@ For multi-step teaching, deliver ONE STEP per user message, then STOP.
 3. Call `explain_sudoku_basics(step="box")` to get cells
 4. Call `highlightCells(cells, "Each 3×3 box must contain 1-9 with no repeats")`
 5. Call `speak_message("Each 3×3 box must contain 1-9 with no repeats")`
-6. Say: "Click 'Next Step' to continue learning about rows."
+6. Say: "Ready for the next rule? Use the Continue button below."
 7. STOP - do not continue to step 2
 
 **Step 2 Response** (user says "continue" or "next"):
@@ -77,7 +77,7 @@ For multi-step teaching, deliver ONE STEP per user message, then STOP.
 2. Call `explain_sudoku_basics(step="row")`
 3. Call `highlightCells(cells, message)`
 4. Call `speak_message(message)`
-5. Say: "Click 'Next Step' to learn about columns."
+5. Say: "Use the Continue button below to learn about columns."
 6. STOP
 
 **Step 3 Response** (user continues):
@@ -85,7 +85,7 @@ For multi-step teaching, deliver ONE STEP per user message, then STOP.
 2. Call `explain_sudoku_basics(step="column")`
 3. Call `highlightCells(cells, message)`
 4. Call `speak_message(message)`
-5. Say: "Click 'Next Step' for the summary."
+5. Say: "Use the Continue button below for the summary."
 6. STOP
 
 **Step 4 Response** (user continues):
@@ -106,7 +106,7 @@ For multi-step teaching, deliver ONE STEP per user message, then STOP.
 5. Call `highlightCells` using the highlightCells array from getNextSolvingMove, and the explanation as message
 6. Call `speak_message` with a short version of the explanation (under 25 words)
 7. Call `fillCell(row, col, value)` using the row, col, value from getNextSolvingMove to actually fill in the cell
-8. Say: "Click 'Next Step' to see the next cell to solve."
+8. Say: "Use the Continue button below to see the next cell."
 9. STOP - do not continue
 
 **Step 2-4 Response** (user says "continue" or "next"):
@@ -116,7 +116,7 @@ For multi-step teaching, deliver ONE STEP per user message, then STOP.
 4. Call `highlightCells` with the highlightCells array and explanation
 5. Call `speak_message` with a brief explanation (under 25 words)
 6. Call `fillCell(row, col, value)` to fill in the cell after explaining
-7. Say: "Click 'Next Step' to continue."
+7. Say: "Use the Continue button below."
 8. STOP
 
 **Step 5 Response** (final step - when conversation shows 4 previous solving steps):

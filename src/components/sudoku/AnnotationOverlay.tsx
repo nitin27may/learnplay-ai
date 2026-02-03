@@ -10,11 +10,11 @@ interface AnnotationOverlayProps {
 }
 
 const colorClasses = {
-  blue: 'bg-blue-400/40 border-blue-600',
-  green: 'bg-green-400/40 border-green-600',
-  yellow: 'bg-yellow-400/40 border-yellow-600',
-  red: 'bg-red-400/40 border-red-600',
-  purple: 'bg-purple-400/40 border-purple-600',
+  blue: 'bg-blue-200/60 border-blue-400',
+  green: 'bg-green-400/70 border-green-600',
+  yellow: 'bg-yellow-300/60 border-yellow-500',
+  red: 'bg-red-400/60 border-red-600',
+  purple: 'bg-purple-400/60 border-purple-600',
 };
 
 const labelColors = {
