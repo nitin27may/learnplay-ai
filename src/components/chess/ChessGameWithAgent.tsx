@@ -223,6 +223,7 @@ export function ChessGameWithAgent() {
       
       const result = engine.move(from, to, promotion);
       if (result) {
+        setPlayerNames(prev => [...prev, 'AI']);
         updateGameState();
         return `AI played: ${result.san}`;
       }
@@ -385,7 +386,7 @@ export function ChessGameWithAgent() {
                 canUndo={history.length > 0}
                 orientation={orientation}
               />
-              <MoveHistory history={history} />
+              <MoveHistory history={history} playerNames={playerNames} />
             </div>
           </div>
         </div>
