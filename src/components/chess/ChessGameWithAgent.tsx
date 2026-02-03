@@ -12,16 +12,8 @@ import { ChessEngine } from '@/lib/chess/engine';
 import type { Square } from '@/lib/chess/types';
 
 export function ChessGameWithAgent() {
-  const [engine] = useState(() => {
-    const eng = new ChessEngine();
-    console.log('🎮 Chess engine initialized with FEN:', eng.getState().fen);
-    return eng;
-  });
-  const [position, setPosition] = useState(() => {
-    const initialFen = engine.getState().fen;
-    console.log('♟️ Initial position set to:', initialFen);
-    return initialFen;
-  });
+  const [engine] = useState(() => new ChessEngine());
+  const [position, setPosition] = useState(() => engine.getState().fen);
   const [history, setHistory] = useState<string[]>([]);
   const [orientation, setOrientation] = useState<'white' | 'black'>('white');
   const [gameStatus, setGameStatus] = useState('');
@@ -35,11 +27,6 @@ export function ChessGameWithAgent() {
   const [isPaused, setIsPaused] = useState(false);
 
   const { appendMessage, isLoading } = useCopilotChat();
-
-  // Debug: Log when position changes
-  useEffect(() => {
-    console.log('📊 Position updated to:', position);
-  }, [position]);
 
   // Provide readable context
   useCopilotReadable({
@@ -82,14 +69,11 @@ export function ChessGameWithAgent() {
   }, [engine]);
 
   const onPieceDrop = useCallback((sourceSquare: Square, targetSquare: Square): boolean => {
-    console.log('♟️ Attempting move:', sourceSquare, '->', targetSquare);
     const move = engine.move(sourceSquare, targetSquare);
     if (move) {
-      console.log('✅ Move successful:', move);
       updateGameState();
       return true;
     }
-    console.log('❌ Move failed or illegal');
     return false;
   }, [engine, updateGameState]);
 

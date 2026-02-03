@@ -2,7 +2,6 @@
 
 import { Chessboard } from 'react-chessboard';
 import type { Square } from '@/lib/chess/types';
-import { useCallback } from 'react';
 
 interface ChessBoardProps {
   position: string;
@@ -19,35 +18,16 @@ export function ChessBoard({
   customSquareStyles = {},
   areDraggablePieces = true,
 }: ChessBoardProps) {
-  console.log('🎨 ChessBoard rendering');
-  console.log('📍 Position:', position);
-  console.log('🎯 Draggable:', areDraggablePieces);
-  
-  const handlePieceDrop = useCallback((sourceSquare: string, targetSquare: string) => {
-    console.log('🎯 DROP EVENT!', sourceSquare, '->', targetSquare);
-    try {
-      const result = onPieceDrop(sourceSquare as Square, targetSquare as Square);
-      console.log('✅ Drop result:', result);
-      return result;
-    } catch (error) {
-      console.error('❌ Drop error:', error);
-      return false;
-    }
-  }, [onPieceDrop]);
-  
-  const handleIsDraggable = useCallback(() => {
-    console.log('🤚 IS_DRAGGABLE CHECK - returning true');
-    return true; // Always return true for testing
-  }, []);
-  
-  console.log('🔧 Setting up Chessboard with handlers');
-  
-  const chessboardProps = {
+  function handleDrop(sourceSquare: string, targetSquare: string) {
+    return onPieceDrop(sourceSquare as Square, targetSquare as Square);
+  }
+
+  const boardProps = {
     position,
-    onPieceDrop: handlePieceDrop,
+    onPieceDrop: handleDrop,
     boardOrientation,
     customSquareStyles,
-    isDraggablePiece: handleIsDraggable,
+    boardWidth: 600,
     customBoardStyle: {
       borderRadius: '4px',
       boxShadow: '0 2px 10px rgba(0, 0, 0, 0.5)',
@@ -56,7 +36,7 @@ export function ChessBoard({
   
   return (
     <div className="w-full max-w-2xl mx-auto">
-      <Chessboard {...chessboardProps as any} />
+      <Chessboard {...boardProps as any} />
     </div>
   );
 }
