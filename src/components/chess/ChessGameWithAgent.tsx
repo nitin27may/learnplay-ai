@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
-import { useFrontendTool, useCopilotChat, useCopilotReadable, useCoAgentStateRender, useCopilotChatSuggestions, useHumanInTheLoop } from '@copilotkit/react-core';
+import { useFrontendTool, useCopilotChat, useCopilotReadable, useCoAgentStateRender, useCopilotChatSuggestions, useRenderToolCall } from '@copilotkit/react-core';
 import { CopilotSidebar } from '@copilotkit/react-ui';
 import { MessageRole, TextMessage } from '@copilotkit/runtime-client-gql';
 import { ChessBoard } from './ChessBoard';
@@ -19,6 +19,7 @@ import {
   ThinkingIndicator,
   MoveSelectionQuiz,
   OpeningCard,
+  ActionButtonGroup,
 } from '@/components/chat';
 
 export function ChessGameWithAgent() {
@@ -29,7 +30,7 @@ export function ChessGameWithAgent() {
   const [orientation, setOrientation] = useState<'white' | 'black'>('white');
   const [gameStatus, setGameStatus] = useState('');
   const [highlightSquares, setHighlightSquares] = useState<Record<string, React.CSSProperties>>({});
-  const [gameMode, setGameMode] = useState<'pvp' | 'pvc' | 'ai'>('pvp'); // Player vs Player, Player vs Computer, Player vs AI
+  const [gameMode, setGameMode] = useState<'pvp' | 'pvc' | 'ai'>('pvc'); // Default to Player vs Computer
   
   // Teaching state
   const [isTeaching, setIsTeaching] = useState(false);
@@ -81,7 +82,7 @@ export function ChessGameWithAgent() {
   });
 
   // Markdown tag renderers for rich inline content
-  const markdownTagRenderers = {
+  const markdownTagRenderers = useMemo(() => ({
     square: (props: { children?: React.ReactNode }) => {
       const square = String(props.children || '');
       return <SquareBadge square={square} />;
@@ -90,7 +91,31 @@ export function ChessGameWithAgent() {
       const strategy = String(props.children || '');
       return <StrategyBadge name={strategy} />;
     },
-  };
+    // Custom paragraph renderer to make "Next Step" text actionable
+    p: ({ children }: { children?: React.ReactNode }) => {
+      const text = children?.toString() || '';
+      // Check if text mentions next step or continuing
+      if (text.toLowerCase().includes('next step') || (text.toLowerCase().includes('click') && text.toLowerCase().includes('continue'))) {
+        return (
+          <div className="my-3">
+            <p className="text-sm text-gray-700 mb-3">{children}</p>
+            <ActionButtonGroup
+              actions={[
+                {
+                  id: 'next',
+                  label: 'Next Step',
+                  variant: 'primary',
+                  icon: 'next'
+                }
+              ]}
+              onAction={handleNextStep}
+            />
+          </div>
+        );
+      }
+      return <p className="text-sm text-gray-700 my-2">{children}</p>;
+    },
+  }), [handleNextStep]);
 
   // Dynamic context-aware chat suggestions
   useCopilotChatSuggestions({
@@ -174,6 +199,35 @@ export function ChessGameWithAgent() {
 
   const handleFlipBoard = useCallback(() => {
     setOrientation(prev => prev === 'white' ? 'black' : 'white');
+  }, []);
+
+  // Handler for Next Step button
+  const handleNextStep = useCallback(async () => {
+    if (isLoading) return;
+    
+    setIsPaused(false);
+    setHighlightSquares({});
+    
+    console.log('[Chess] Sending continuation message');
+    try {
+      await appendMessage(
+        new TextMessage({
+          role: MessageRole.User,
+          content: 'Continue to the next step',
+        })
+      );
+    } catch (error) {
+      console.error('Failed to continue:', error);
+    }
+  }, [appendMessage, isLoading]);
+
+  // Handler for ending lesson
+  const handleEndLesson = useCallback(() => {
+    setIsTeaching(false);
+    setIsPaused(false);
+    setCurrentStep(0);
+    setTotalSteps(0);
+    setHighlightSquares({});
   }, []);
 
   // Frontend tool: Start teaching session
@@ -353,25 +407,129 @@ export function ChessGameWithAgent() {
   // but removed due to React 19 type compatibility issues. They can be re-enabled 
   // once CopilotKit provides updated types for React 19.
 
-  const handleNextStep = useCallback(async () => {
-    if (isLoading) return;
-    setIsPaused(false);
-    setHighlightSquares({});
-    
-    await appendMessage(
-      new TextMessage({
-        role: MessageRole.User,
-        content: 'Continue to the next step',
-      })
-    );
-  }, [isLoading, appendMessage]);
+  // Render backend tool calls with custom UI components
+  useRenderToolCall({
+    name: 'suggest_chess_move',
+    render: ({ status, result }) => {
+      if (status === 'executing') {
+        return <ThinkingIndicator message="Analyzing position..." />;
+      }
+      
+      if (!result) {
+        return <div className="text-sm text-gray-500 italic">No move suggestion available</div>;
+      }
+      
+      try {
+        const data = typeof result === 'string' ? JSON.parse(result) : result;
+        return (
+          <MoveCard
+            from={data.from || ''}
+            to={data.to || ''}
+            piece={data.piece || 'piece'}
+            pieceColor={data.color || 'white'}
+            notation={data.san || data.uci || ''}
+            explanation={data.explanation || data.reason || 'Suggested move'}
+          />
+        );
+      } catch (e) {
+        console.error('Failed to render suggest_chess_move:', e);
+        return <div className="text-sm text-red-500 italic">Error loading move suggestion</div>;
+      }
+    }
+  });
 
-  const handleEndLesson = useCallback(() => {
-    setIsTeaching(false);
-    setCurrentStep(0);
-    setTotalSteps(0);
-    setHighlightSquares({});
-  }, []);
+  useRenderToolCall({
+    name: 'analyze_chess_position',
+    render: ({ status, result }) => {
+      if (status === 'executing') {
+        return <ThinkingIndicator message="Analyzing position..." />;
+      }
+      
+      if (!result) {
+        return <div className="text-sm text-gray-500 italic">No analysis available</div>;
+      }
+      
+      try {
+        const data = typeof result === 'string' ? JSON.parse(result) : result;
+        return (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 my-2">
+            <h3 className="font-bold text-blue-900 mb-2">Position Analysis</h3>
+            <div className="space-y-1 text-sm text-blue-800">
+              {data.evaluation && <p>Evaluation: {data.evaluation}</p>}
+              {data.material && <p>Material: {data.material}</p>}
+              {data.threats && <p>Threats: {data.threats}</p>}
+              {data.suggestions && <p>Suggestions: {data.suggestions}</p>}
+            </div>
+          </div>
+        );
+      } catch (e) {
+        console.error('Failed to render analyze_chess_position:', e);
+        return <div className="text-sm text-red-500 italic">Error loading analysis</div>;
+      }
+    }
+  });
+
+  useRenderToolCall({
+    name: 'explain_chess_position',
+    render: ({ status, result }) => {
+      if (status === 'executing') {
+        return <ThinkingIndicator message="Analyzing position..." />;
+      }
+      
+      if (!result) {
+        return <div className="text-sm text-gray-500 italic">No explanation available</div>;
+      }
+      
+      try {
+        const data = typeof result === 'string' ? JSON.parse(result) : result;
+        return (
+          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 my-2">
+            <h3 className="font-bold text-purple-900 mb-2">Position Explanation</h3>
+            <p className="text-sm text-purple-800">{data.explanation || data.description || String(result)}</p>
+          </div>
+        );
+      } catch (e) {
+        console.error('Failed to render explain_chess_position:', e);
+        return <div className="text-sm text-red-500 italic">Error loading explanation</div>;
+      }
+    }
+  });
+
+  useRenderToolCall({
+    name: 'validate_chess_move',
+    render: ({ status, result }) => {
+      if (status === 'executing') {
+        return <ThinkingIndicator message="Validating move..." />;
+      }
+      
+      if (!result) {
+        return <div className="text-sm text-gray-500 italic">Unable to validate move</div>;
+      }
+      
+      try {
+        const data = typeof result === 'string' ? JSON.parse(result) : result;
+        const isValid = data.is_valid || data.valid || false;
+        return (
+          <div className={`rounded-lg p-3 ${isValid ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+            <div className="flex items-center gap-2">
+              <span className="text-lg">{isValid ? '✓' : '✗'}</span>
+              <span className={`font-semibold ${isValid ? 'text-green-800' : 'text-red-800'}`}>
+                {isValid ? 'Valid move!' : 'Invalid move'}
+              </span>
+            </div>
+            {data.reason && (
+              <p className={`mt-1 text-sm ${isValid ? 'text-green-700' : 'text-red-700'}`}>
+                {data.reason}
+              </p>
+            )}
+          </div>
+        );
+      } catch (e) {
+        console.error('Failed to render validate_chess_move:', e);
+        return <div className="text-sm text-red-500 italic">Error validating move</div>;
+      }
+    }
+  });
 
   return (
     <CopilotSidebar
