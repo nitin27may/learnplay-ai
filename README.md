@@ -22,6 +22,30 @@ LearnPlay.ai uses cutting-edge AI agents to teach classic board games (Sudoku an
 
 ---
 
+## Features & UI
+
+### Interactive AI Hints
+Get smart suggestions with visual feedback - the AI highlights constraint cells and shows the target move with detailed explanations.
+
+![Sudoku Hint Card](docs/screnshots/hint.png)
+
+### Step-by-Step Teaching
+Learn game rules and strategies through guided lessons with visual demonstrations and voice explanations.
+
+![Teaching Step 1](docs/screnshots/step.png)
+
+![Teaching Step 2](docs/screnshots/step2.png)
+
+### Key Features
+- **Visual Highlights**: Color-coded cell highlighting to show constraints and patterns
+- **Smart Cards**: Interactive cards for hints, analysis, and move suggestions
+- **Voice Mode**: Natural voice explanations using ElevenLabs TTS
+- **Progress Tracking**: See your current step in multi-step lessons
+- **Apply to Board**: One-click to apply suggested moves
+- **Continue Button**: Easy navigation through teaching sessions
+
+---
+
 ## Architecture
 
 LearnPlay.ai uses a **Multi-Agent Architecture** where specialized AI agents handle specific games, orchestrated through **CopilotKit's AG-UI protocol** for seamless frontend-backend communication.
