@@ -8,7 +8,7 @@ This file only carries what a change has to respect.
 ## Shape of the thing
 
 Two processes, always both. Next.js (UI, port 3000) and a LangGraph dev server
-(the tutors, port 8123). `npm run dev` starts both under `concurrently` with
+(the tutors, port 8123). `pnpm run dev` starts both under `concurrently` with
 `--kill-others`, so one crashing takes down the other — that is deliberate, and
 it means a stack trace from either side ends the whole session.
 
@@ -27,23 +27,23 @@ Browser -> Next.js :3000 -> /api/copilotkit/<agent> -> LangGraph :8123
 ## Commands
 
 ```bash
-npm run dev            # UI + agent together (this is the one you want)
-npm run dev:ui         # Next.js only, --turbopack
-npm run dev:agent      # LangGraph CLI only, port 8123
-npm run dev:debug      # same as dev, LOG_LEVEL=debug
-npm run dev:doppler    # dev, with secrets injected by Doppler
+pnpm run dev            # UI + agent together (this is the one you want)
+pnpm run dev:ui         # Next.js only, --turbopack
+pnpm run dev:agent      # LangGraph CLI only, port 8123
+pnpm run dev:debug      # same as dev, LOG_LEVEL=debug
+pnpm run dev:doppler    # dev, with secrets injected by Doppler
 
-npm run typecheck      # tsc --noEmit
-npm run lint           # eslint .
-npm run build
+pnpm run typecheck      # tsc --noEmit
+pnpm run lint           # eslint .
+pnpm run build
 ```
 
 There is **no test script on this branch** — `typecheck`, `lint` and `build` are
 the whole gate. Do not claim a change is verified on the strength of a passing
 build alone; say which of the three you ran.
 
-**`postinstall` runs `install:agent`.** Every `npm install` re-runs
-`scripts/setup-agent.sh`, which provisions the Python side with `uv`. If npm
+**`postinstall` runs `install:agent`.** Every `pnpm install` re-runs
+`scripts/setup-agent.sh`, which provisions the Python side with `uv`. If pnpm
 install fails at the end, look there before suspecting the Node deps.
 
 ## Agents (`agent/`)
@@ -94,4 +94,4 @@ sentence when a turn produces text and no speech).
 - Deploy this publicly as-is. See `docs/SECURITY_AUDIT.md`.
 - Add a per-agent API route. Register the graph in `agent/langgraph.json`.
 - Construct a chat model outside `get_llm_provider()`.
-- Use pip or poetry for the Python side, or yarn/pnpm for the Node side.
+- Use pip or poetry for the Python side, or npm/yarn for the Node side.

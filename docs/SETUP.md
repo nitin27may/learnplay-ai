@@ -304,14 +304,14 @@ LLM_MAX_TOKENS=800                     # Limit response length
 cd agent
 uv sync --reinstall
 cd ..
-npm run dev
+pnpm run dev
 ```
 
 **Error**: `node_modules not found`
 
 **Fix**:
 ```bash
-npm install --force
+pnpm install
 ```
 
 ### Agent Won't Start
@@ -345,14 +345,14 @@ uv sync --reinstall
 **Fix**:
 1. Verify agent is running on port 8123
 2. Check no firewall blocking localhost
-3. Restart both services: `npm run dev`
+3. Restart both services: `pnpm run dev`
 
 **Error**: Page won't load or blank screen
 
 **Fix**: Clear Next.js cache
 ```bash
 rm -rf .next
-npm run dev
+pnpm run dev
 ```
 
 ### Voice/TTS Issues
@@ -372,8 +372,8 @@ npm run dev
 **Fix**:
 ```bash
 # Kill process on port 3000
-npx kill-port 3000
-npm run dev
+pnpm dlx kill-port 3000
+pnpm run dev
 ```
 
 **Error**: `Port 8123 already in use`

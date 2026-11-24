@@ -4,7 +4,7 @@
 
 LearnPlay.ai uses cutting-edge AI agents to teach classic board games (Sudoku and Chess) with real-time guidance, visual highlights, and voice explanations. Each game has a specialized AI tutor that adapts to your skill level and teaches step-by-step.
 
-![Next.js](https://img.shields.io/badge/Next.js-16.1-black) ![CopilotKit](https://img.shields.io/badge/CopilotKit-1.51-blue) ![LangGraph](https://img.shields.io/badge/LangGraph-1.0-green) ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
+![Next.js](https://img.shields.io/badge/Next.js-16.4-black) ![CopilotKit](https://img.shields.io/badge/CopilotKit-1.90-blue) ![LangGraph](https://img.shields.io/badge/LangGraph-1.2-green) ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue)
 
 ## Project Overview
 
@@ -86,7 +86,7 @@ flowchart TB
 ### Technology Stack
 
 - **Frontend**: Next.js 16, React 19, TypeScript, Tailwind CSS
-- **AI Framework**: CopilotKit 1.51, LangGraph 1.0, LangChain
+- **AI Framework**: CopilotKit 1.90, LangGraph 1.2, LangChain
 - **LLM Providers**: OpenAI, Anthropic Claude, Azure OpenAI, Ollama
 - **Voice**: ElevenLabs Text-to-Speech
 
@@ -98,7 +98,8 @@ flowchart TB
 
 ### Prerequisites
 
-- **Node.js** 20+ ([Download](https://nodejs.org/))
+- **Node.js** 26 (LTS) ([Download](https://nodejs.org/))
+- **pnpm** 10 ([Install](https://pnpm.io/installation))
 - **Python** 3.12+ ([Download](https://www.python.org/))
 - **OpenAI API Key** (or other LLM provider) ([Get Key](https://platform.openai.com/api-keys))
 
@@ -110,7 +111,7 @@ git clone https://github.com/nitin27may/learnplay-ai.git
 cd learnplay-ai
 
 # Install all dependencies (frontend + backend)
-npm install
+pnpm install
 ```
 
 The `postinstall` script automatically sets up the Python environment using `uv`.
@@ -169,7 +170,7 @@ OLLAMA_MODEL=llama3.1:8b
 ### Start Everything
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 This starts:
@@ -184,10 +185,10 @@ If you need to run frontend and backend separately:
 
 ```bash
 # Terminal 1 - Frontend only
-npm run dev:ui
+pnpm run dev:ui
 
 # Terminal 2 - Agent server only
-npm run dev:agent
+pnpm run dev:agent
 ```
 
 ### Verify Setup
@@ -269,17 +270,17 @@ Navigate to [http://localhost:3000/sudoku](http://localhost:3000/sudoku) and cli
 
 ```bash
 # Run both frontend and agent
-npm run dev
+pnpm run dev
 
 # Run separately
-npm run dev:ui      # Frontend only (port 3000)
-npm run dev:agent   # Agent server only (port 8123)
+pnpm run dev:ui      # Frontend only (port 3000)
+pnpm run dev:agent   # Agent server only (port 8123)
 
 # Build for production
-npm run build
+pnpm run build
 
 # Lint code
-npm run lint
+pnpm run lint
 ```
 
 ### Project Structure
