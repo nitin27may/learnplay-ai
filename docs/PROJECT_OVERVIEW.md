@@ -171,11 +171,11 @@ An educational gaming platform featuring:
 - **TypeScript 5** - Type-safe development
 - **Tailwind CSS 4** - Utility-first styling
 - **Framer Motion** - Smooth animations
-- **CopilotKit 1.51** - AI integration layer
+- **CopilotKit 1.90** - AI integration layer
 
 ### Backend
 - **Python 3.13** - Agent runtime
-- **LangGraph 1.0** - Agent orchestration framework
+- **LangGraph 1.2** - Agent orchestration framework
 - **LangChain 1.2** - LLM abstraction layer
 - **FastAPI** - Agent API server
 

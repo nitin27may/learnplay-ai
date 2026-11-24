@@ -251,16 +251,16 @@ Check browser console for agent routing:
 
 ```bash
 # Start both UI and agent
-npm run dev
+pnpm run dev
 
 # Start only UI
-npm run dev:ui
+pnpm run dev:ui
 
 # Start only agent
-npm run dev:agent
+pnpm run dev:agent
 
 # With Doppler secrets
-npm run dev:doppler
+pnpm run dev:doppler
 ```
 
 ## Environment Variables
@@ -283,7 +283,7 @@ LLM_MAX_TOKENS=1000
 
 The project uses Playwright MCP for browser testing. To test:
 
-1. Start the dev server: `npm run dev`
+1. Start the dev server: `pnpm run dev`
 2. Use Playwright MCP tools to interact with `http://localhost:3000/sudoku`
 3. Test teaching flow: Click "Learn Sudoku Basics" and verify progression
 

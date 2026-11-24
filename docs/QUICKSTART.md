@@ -5,9 +5,9 @@
 ## Prerequisites
 
 Before starting, ensure you have completed the basic setup from the [README](../README.md):
-- ✅ Dependencies installed (`npm install`)
+- ✅ Dependencies installed (`pnpm install`)
 - ✅ API keys configured in `agent/.env`
-- ✅ Application running with `npm run dev`
+- ✅ Application running with `pnpm run dev`
 
 ---
 
@@ -15,7 +15,7 @@ Before starting, ensure you have completed the basic setup from the [README](../
 
 ### 1. Verify Agent Registration
 
-After starting with `npm run dev`, check that all agents are registered:
+After starting with `pnpm run dev`, check that all agents are registered:
 
 ```
 ✓ router_agent registered
@@ -87,7 +87,7 @@ langgraph dev
 
 **Terminal 2 - Frontend (Next.js):**
 ```bash
-npm run dev:ui
+pnpm run dev:ui
 # Frontend starts on http://localhost:3000
 ```
 
@@ -262,20 +262,20 @@ learnplay-ai/
 
 ```bash
 # Start both frontend and agent
-npm run dev
+pnpm run dev
 
 # Start separately
-npm run dev:ui        # Frontend only (port 3000)
-npm run dev:agent     # Agent only (port 8123)
+pnpm run dev:ui        # Frontend only (port 3000)
+pnpm run dev:agent     # Agent only (port 8123)
 
 # Build for production
-npm run build
+pnpm run build
 
 # Run linter
-npm run lint
+pnpm run lint
 
 # Type checking
-npm run type-check
+pnpm run typecheck
 ```
 
 ---

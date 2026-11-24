@@ -158,7 +158,7 @@ return NextResponse.json(
 
 #### Install NextAuth.js
 ```bash
-npm install next-auth @auth/core
+pnpm add next-auth @auth/core
 ```
 
 #### Create `src/app/api/auth/[...nextauth]/route.ts`
@@ -215,7 +215,7 @@ export const config = {
 
 #### Install rate limiting library
 ```bash
-npm install @upstash/ratelimit @upstash/redis
+pnpm add @upstash/ratelimit @upstash/redis
 ```
 
 #### Create `src/lib/rate-limit.ts`
@@ -291,7 +291,7 @@ export const POST = async (req: NextRequest) => {
 
 #### Install Zod
 ```bash
-npm install zod
+pnpm add zod
 ```
 
 #### Update TTS endpoint with validation
