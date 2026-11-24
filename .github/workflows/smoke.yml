@@ -15,10 +15,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: pnpm
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -31,7 +35,7 @@ jobs:
           enable-cache: true
 
       - name: Install Node.js dependencies
-        run: npm install
+        run: pnpm install --frozen-lockfile
 
       - name: Install Python dependencies
         run: |
@@ -51,17 +55,17 @@ jobs:
           echo "Python syntax check passed"
 
       - name: Lint TypeScript
-        run: npm run lint
+        run: pnpm run lint
 
       - name: Type check
-        run: npm run typecheck
+        run: pnpm run typecheck
 
       - name: Build frontend
-        run: npm run build
+        run: pnpm run build
 
       - name: Test frontend startup
         run: |
-          npm start &
+          pnpm start &
           FRONTEND_PID=$!
           
           timeout=30

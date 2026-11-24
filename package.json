@@ -3,23 +3,24 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"npm run dev:ui\" \"npm run dev:agent\" --names ui,agent --prefix-colors blue,green --kill-others",
-    "dev:doppler": "doppler run -- concurrently \"npm run dev:ui\" \"npm run dev:agent\" --names ui,agent --prefix-colors blue,green --kill-others",
-    "dev:debug": "LOG_LEVEL=debug npm run dev",
-    "dev:agent": "cd agent && npx @langchain/langgraph-cli dev --port 8123 --no-browser",
+    "dev": "concurrently \"pnpm run dev:ui\" \"pnpm run dev:agent\" --names ui,agent --prefix-colors blue,green --kill-others",
+    "dev:doppler": "doppler run -- concurrently \"pnpm run dev:ui\" \"pnpm run dev:agent\" --names ui,agent --prefix-colors blue,green --kill-others",
+    "dev:debug": "LOG_LEVEL=debug pnpm run dev",
+    "dev:agent": "cd agent && pnpm exec langgraphjs dev --port 8123 --no-browser",
     "dev:ui": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "install:agent": "sh ./scripts/setup-agent.sh || scripts\\setup-agent.bat",
-    "postinstall": "npm run install:agent"
+    "postinstall": "pnpm run install:agent"
   },
   "dependencies": {
     "@copilotkit/react-core": "^1.51.3",
     "@copilotkit/react-textarea": "^1.51.3",
     "@copilotkit/react-ui": "^1.51.3",
     "@copilotkit/runtime": "^1.51.3",
+    "@copilotkit/runtime-client-gql": "^1.90.2",
     "chess.js": "^1.4.0",
     "framer-motion": "^12.29.2",
     "next": "16.1.1",
@@ -40,5 +41,15 @@
     "eslint-config-next": "16.1.1",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "packageManager": "pnpm@10.33.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "sharp"
+    ],
+    "ignoredBuiltDependencies": [
+      "@scarf/scarf"
+    ]
   }
 }
